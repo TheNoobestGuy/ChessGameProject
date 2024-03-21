@@ -1,0 +1,187 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Source\Bishop.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Chessboard.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Constants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Figure.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\GameEngine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\King.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Knight.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\MainMenu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Pawn.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Queen.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Rook.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Scenes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\TextureMenager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Source\Chessboard.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Client.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Figure.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GameEngine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\MainMenu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\TextureMenager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include=".gitattributes" />
+    <None Include=".gitignore" />
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="Assets\Font\BebasNeue-Regular.ttf" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Textures\Chessboard\1.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Textures\Chessboard\2.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Textures\Chessboard\3.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Textures\Chessboard\4.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Textures\Chessboard\5.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Textures\Chessboard\6.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Textures\Chessboard\7.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Textures\Chessboard\8.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Textures\Chessboard\9.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Textures\Chessboard\A.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Textures\Chessboard\B.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Textures\Chessboard\berth.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Textures\Chessboard\blackSqr.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Textures\Chessboard\C.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Textures\Chessboard\D.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Textures\Chessboard\E.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Textures\Chessboard\F.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Textures\Chessboard\G.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Textures\Chessboard\H.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Textures\Chessboard\mark.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Textures\Chessboard\whiteSqr.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Textures\Figures\black_bishop.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Textures\Figures\black_king.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Textures\Figures\black_knight.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Textures\Figures\black_pawn.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Textures\Figures\black_queen.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Textures\Figures\black_rook.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Textures\Figures\white_bishop.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Textures\Figures\white_king.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Textures\Figures\white_knight.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Textures\Figures\white_pawn.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Textures\Figures\white_queen.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Textures\Figures\white_rook.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+</Project>
