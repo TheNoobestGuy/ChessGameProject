@@ -67,15 +67,16 @@ void GameEngine::Init(const char* title, int x, int y, int width, int height, bo
 	}
 }
 
-void GameEngine::EventHandler()
+void GameEngine::EventHandler(bool allowEvent)
 {
 	SDL_Event event;
-	SDL_PollEvent(&event);
 
 	SDL_GetMouseState(&mouse_x, &mouse_y);
 
-	switch (event.type)
+	while (allowEvent && SDL_PollEvent(&event))
 	{
+		switch (event.type)
+		{
 		case SDL_QUIT:
 			isRunning = false;
 			break;
@@ -117,6 +118,7 @@ void GameEngine::EventHandler()
 
 		default:
 			break;
+		}
 	}
 }
 

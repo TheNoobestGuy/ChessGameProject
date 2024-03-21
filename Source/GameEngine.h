@@ -27,7 +27,7 @@ class GameEngine
 
 		// Vital game functions
 		void Init(const char* title, int x, int y, int width, int height, bool fullscreen);
-		void EventHandler();
+		void EventHandler(bool allowevent);
 		void Clean();
 
 		// Load scene

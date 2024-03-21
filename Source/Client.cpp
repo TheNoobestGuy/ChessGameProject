@@ -11,7 +11,10 @@ int main(int argc, char* args[])
 	// Timer
 	int const frameDelay = 1000 / FPS;    // (Time delay for one frame) = (1000)/(frames per second)
 	Uint32 frameStart;
+	Uint32 previousTime = SDL_GetTicks();
+	Uint32 lag = 0;
 	int deltaTime;
+	bool allowEvent = true;
 
 	// Game Initialising
 	game_engine = new GameEngine();
@@ -24,8 +27,23 @@ int main(int argc, char* args[])
 	while (game_engine->Running())
 	{
 		frameStart = SDL_GetTicks();
+		Uint32 elapsedTime = frameStart - previousTime;
+		previousTime = frameStart;
+		lag += elapsedTime;
 
-		game_engine->EventHandler();
+		game_engine->EventHandler(&allowEvent);
+
+		// Throttle event processing based on a cooldown period
+		if (allowEvent && lag >= frameDelay) {
+			allowEvent = false;
+			lag = 0;
+		}
+		else if (!allowEvent) {
+			// Check if cooldown period has ended
+			if (elapsedTime >= frameDelay) {
+				allowEvent = true;
+			}
+		}
 
 		// Stages
 		switch (GameEngine::stage)
