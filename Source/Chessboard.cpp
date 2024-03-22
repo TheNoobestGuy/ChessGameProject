@@ -59,7 +59,7 @@ Chessboard::~Chessboard()
 			chessboard[row][col] = nullptr;
 		}
 	}
-	for (auto figure : white_player)
+	for (Figure* figure : white_player)
 	{
 		delete figure;
 		figure = nullptr;
