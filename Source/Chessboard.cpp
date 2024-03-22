@@ -396,7 +396,7 @@ void Chessboard::RenderFigures()
 	SDL_RenderPresent(GameEngine::renderer);
 } 
 
-void Chessboard::KingMechanic(std::vector<Figure*> player_figures, std::vector<Figure*> opposite_player_figures, Figure* king)
+void Chessboard::KingMechanic(std::vector<Figure*>& player_figures, std::vector<Figure*>& opposite_player_figures, Figure* king)
 {
 	// Deduce opposite player
 	int opposite_player = 1;
@@ -502,7 +502,7 @@ void Chessboard::KingMechanic(std::vector<Figure*> player_figures, std::vector<F
 	}
 }
 
-void Chessboard::CheckForEntangling(std::vector<Figure*> player_figures, Figure* opposite_king)
+void Chessboard::CheckForEntangling(std::vector<Figure*>& player_figures, Figure* opposite_king)
 {
 	for (Figure* figure : player_figures)
 	{
@@ -570,7 +570,7 @@ void Chessboard::CheckForEntangling(std::vector<Figure*> player_figures, Figure*
 	}
 }
 
-void Chessboard::ApplyEntangledMoves(std::vector<Figure*> player_figures)
+void Chessboard::ApplyEntangledMoves(std::vector<Figure*>& player_figures)
 {
 	for (Figure* figure : player_figures)
 	{
@@ -581,7 +581,7 @@ void Chessboard::ApplyEntangledMoves(std::vector<Figure*> player_figures)
 	}
 }
 
-void Chessboard::EndGameConditions(std::vector<Figure*> player_figures, Figure* king)
+void Chessboard::EndGameConditions(std::vector<Figure*>& player_figures, Figure* king)
 {
 	// Check if player has available moves
 	bool no_moves = true;
@@ -696,7 +696,7 @@ void Chessboard::EndGameConditions(std::vector<Figure*> player_figures, Figure* 
 	}
 }
 
-void Chessboard::MarkFieldsUnderAttack(std::vector<Figure*> player_figures)
+void Chessboard::MarkFieldsUnderAttack(std::vector<Figure*>& player_figures)
 {
 	for (Figure* figure : player_figures)
 	{
@@ -775,7 +775,7 @@ void Chessboard::MarkFieldsUnderAttack(std::vector<Figure*> player_figures)
 	}
 }
 
-void Chessboard::CalculateFigureMoves(std::vector<Figure*> player_figures)
+void Chessboard::CalculateFigureMoves(std::vector<Figure*>& player_figures)
 {
 	for (Figure* figure : player_figures)
 	{
@@ -1037,7 +1037,7 @@ void Chessboard::PickedUpFigure()
 
 }
 
-void Chessboard::DrawMarksForMovesWhenPicked(std::vector<Figure*> player_figures)
+void Chessboard::DrawMarksForMovesWhenPicked(std::vector<Figure*>& player_figures)
 {
 	for (Figure* figure : player_figures)
 	{
