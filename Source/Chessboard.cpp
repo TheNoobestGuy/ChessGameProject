@@ -190,6 +190,8 @@ void Chessboard::BoardUpdate()
 {
 	if (update_board)
 	{
+		checkmate = false;
+
 		// Remove from board conquered figures
 		while (!removed_figures.empty())
 		{
@@ -496,10 +498,6 @@ void Chessboard::KingMechanic(std::vector<Figure*>& player_figures, std::vector<
 				figure->available_moves = buffor;
 			}
 		}
-	}
-	else
-	{
-		checkmate = false;
 	}
 }
 
