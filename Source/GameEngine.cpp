@@ -164,7 +164,7 @@ void GameEngine::RectangleHandler(SDL_Rect* srcRect, SDL_Rect* destRect, int src
 	srcRect->h = src_size;
 	srcRect->x = srcRect->y = 0;
 
-	// Destinated size and position of image
+	// Destinated size
 	destRect->w = destRect->h = dest_size;
 }
 

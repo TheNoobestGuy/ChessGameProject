@@ -15,7 +15,7 @@ SDL_Texture* TextureMenager::LoadFont(char const* text, SDL_Color color)
 	SDL_Surface* surface = TTF_RenderText_Solid(font, text, color);
 	SDL_Texture* texture = SDL_CreateTextureFromSurface(GameEngine::renderer, surface);
 	SDL_FreeSurface(surface);
-	font = nullptr;
+	TTF_CloseFont(font);
 
 	return texture;
 }

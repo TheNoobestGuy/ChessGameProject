@@ -77,4 +77,10 @@ struct Texture
 {
 	SDL_Texture* texture;
 	SDL_Rect srcRect = GameEngine::CreateRectangle(0, 0, 64);
+
+	~Texture()
+	{
+		SDL_DestroyTexture(texture);
+		texture = nullptr;
+	}
 };

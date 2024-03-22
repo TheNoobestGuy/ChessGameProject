@@ -11,7 +11,10 @@ MainMenu::MainMenu()
 	CreateOptions();
 }
 
-MainMenu::~MainMenu() {}
+MainMenu::~MainMenu() 
+{
+	marked = nullptr;
+}
 
 void MainMenu::CreateMainMenu()
 {
@@ -19,31 +22,32 @@ void MainMenu::CreateMainMenu()
 	{
 		menu_selection[i].color = { 255, 255, 255 };
 	}
+	SDL_Color selected = { 255, 0, 0 };
 
 	menu_selection[0].text = "Chess Game Project";
 	menu_selection[0].rect = GameEngine::CreateRectangle(SCREEN_WIDTH/2 - 200, 60, 400, 100);
 	menu_selection[0].unselected = TextureMenager::LoadFont(menu_selection[0].text, menu_selection[0].color);
-	menu_selection[0].selected = TextureMenager::LoadFont(menu_selection[0].text, { 255, 0, 0 });
+	menu_selection[0].selected = TextureMenager::LoadFont(menu_selection[0].text, selected);
 
 	menu_selection[1].text = "Start Game";
 	menu_selection[1].rect = GameEngine::CreateRectangle(SCREEN_WIDTH/2 - 100, SCREEN_HEIGHT/2 - 70, 200, 50);
 	menu_selection[1].unselected = TextureMenager::LoadFont(menu_selection[1].text, menu_selection[1].color);
-	menu_selection[1].selected = TextureMenager::LoadFont(menu_selection[1].text, { 255, 0, 0 });
+	menu_selection[1].selected = TextureMenager::LoadFont(menu_selection[1].text, selected);
 
 	menu_selection[2].text = "Options";
 	menu_selection[2].rect = GameEngine::CreateRectangle(SCREEN_WIDTH/2 - 60, SCREEN_HEIGHT/2 - 20, 120, 50);
 	menu_selection[2].unselected = TextureMenager::LoadFont(menu_selection[2].text, menu_selection[2].color);
-	menu_selection[2].selected = TextureMenager::LoadFont(menu_selection[2].text, { 255, 0, 0 });
+	menu_selection[2].selected = TextureMenager::LoadFont(menu_selection[2].text, selected);
 
 	menu_selection[3].text = "Exit Game";
 	menu_selection[3].rect = GameEngine::CreateRectangle(SCREEN_WIDTH/2 - 80, SCREEN_HEIGHT/2 + 30, 160, 50);
 	menu_selection[3].unselected = TextureMenager::LoadFont(menu_selection[3].text, menu_selection[3].color);
-	menu_selection[3].selected = TextureMenager::LoadFont(menu_selection[3].text, { 255, 0, 0 });
+	menu_selection[3].selected = TextureMenager::LoadFont(menu_selection[3].text, selected);
 
 	menu_selection[4].text = "Author: Maciej Kaptur";
 	menu_selection[4].rect = GameEngine::CreateRectangle(SCREEN_WIDTH - 190, SCREEN_HEIGHT - 45, 180, 40);
 	menu_selection[4].unselected = TextureMenager::LoadFont(menu_selection[4].text, menu_selection[4].color);
-	menu_selection[4].selected = TextureMenager::LoadFont(menu_selection[4].text, { 255, 0, 0 });
+	menu_selection[4].selected = TextureMenager::LoadFont(menu_selection[4].text, selected);
 }
 
 void MainMenu::CreateOptions()
@@ -52,11 +56,12 @@ void MainMenu::CreateOptions()
 	{
 		options_selection[i].color = { 255, 255, 255 };
 	}
+	SDL_Color selected = { 255, 0, 0 };
 
 	options_selection[0].text = "Back";
 	options_selection[0].rect = GameEngine::CreateRectangle(SCREEN_WIDTH - 100, SCREEN_HEIGHT - 45, 90, 40);
 	options_selection[0].unselected = TextureMenager::LoadFont(options_selection[0].text, options_selection[0].color);
-	options_selection[0].selected = TextureMenager::LoadFont(options_selection[0].text, { 255, 0, 0 });
+	options_selection[0].selected = TextureMenager::LoadFont(options_selection[0].text, selected);
 }
 
 void MainMenu::UpdateMainMenu()

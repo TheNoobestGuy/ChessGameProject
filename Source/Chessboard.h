@@ -24,6 +24,11 @@ struct Field
 
 	// Rectangle
 	SDL_Rect field_rect = GameEngine::CreateRectangle(field_ID.x, field_ID.y, field_size);
+
+	~Field()
+	{
+		figure = nullptr;
+	}
 };
 
 struct FigureMove
@@ -31,6 +36,11 @@ struct FigureMove
 	int x = 0;
 	int y = 0;
 	Figure* attacked_figure = nullptr;
+
+	~FigureMove()
+	{
+		attacked_figure = nullptr;
+	}
 };
 
 class Chessboard
@@ -96,8 +106,6 @@ class Chessboard
 		void DrawMarksForMovesWhenPicked(std::vector<Figure*> player_figures);
 		void MoveFigure();
 
-
-// ****************** TEST TEXTURES ******************
 	private:
 		Texture fields_colors[2] =
 		{
@@ -109,29 +117,5 @@ class Chessboard
 		{
 			{ TextureMenager::LoadTexture("Textures/Chessboard/mark.png") },
 			{ TextureMenager::LoadTexture("Textures/Chessboard/berth.png") }
-		};
-
-		SDL_Texture* numeric_tags[8] =
-		{
-			TextureMenager::LoadTexture("Textures/Chessboard/1.png"),
-			TextureMenager::LoadTexture("Textures/Chessboard/2.png"),
-			TextureMenager::LoadTexture("Textures/Chessboard/3.png"),
-			TextureMenager::LoadTexture("Textures/Chessboard/4.png"),
-			TextureMenager::LoadTexture("Textures/Chessboard/5.png"),
-			TextureMenager::LoadTexture("Textures/Chessboard/6.png"),
-			TextureMenager::LoadTexture("Textures/Chessboard/7.png"),
-			TextureMenager::LoadTexture("Textures/Chessboard/8.png")
-		};
-
-		SDL_Texture* letter_tags[8] =
-		{
-			TextureMenager::LoadTexture("Textures/Chessboard/A.png"),
-			TextureMenager::LoadTexture("Textures/Chessboard/B.png"),
-			TextureMenager::LoadTexture("Textures/Chessboard/C.png"),
-			TextureMenager::LoadTexture("Textures/Chessboard/D.png"),
-			TextureMenager::LoadTexture("Textures/Chessboard/E.png"),
-			TextureMenager::LoadTexture("Textures/Chessboard/F.png"),
-			TextureMenager::LoadTexture("Textures/Chessboard/G.png"),
-			TextureMenager::LoadTexture("Textures/Chessboard/H.png")
 		};
 };

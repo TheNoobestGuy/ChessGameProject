@@ -44,7 +44,32 @@ Chessboard::Chessboard(int fields_size)
 	reset.unselected = TextureMenager::LoadFont(reset.text, reset.color);
 }
 
-Chessboard::~Chessboard() {}
+Chessboard::~Chessboard() 
+{
+	white_king = nullptr;
+	black_king = nullptr;
+	current_figure = nullptr;
+	last_collision = nullptr;
+
+	for (int row = 0; row < 8; row++)
+	{
+		for (int col = 0; col < 8; col++)
+		{
+			delete chessboard[row][col];
+			chessboard[row][col] = nullptr;
+		}
+	}
+	for (Figure* figure : white_player)
+	{
+		delete figure;
+		figure = nullptr;
+	}
+	for (Figure* figure : black_player)
+	{
+		delete figure;
+		figure = nullptr;
+	}
+}
 
 void Chessboard::CreateBoard()
 {
@@ -310,44 +335,10 @@ void Chessboard::SwitchTurns()
 	else if (end_game)
 	{
 		GameEngine::stage = 0;
-
-		// Delete objects
-		for (int row = 0; row < 8; row++)
-		{
-			for (int col = 0; col < 8; col++)
-			{
-				delete chessboard[row][col];
-			}
-		}
-		for (Figure* figure : white_player)
-		{
-			delete figure;
-		}
-		for (Figure* figure : black_player)
-		{
-			delete figure;
-		}
 	}
 	else if (reset_game)
 	{
 		GameEngine::initialize_stage = true;
-
-		// Delete objects
-		for (int row = 0; row < 8; row++)
-		{
-			for (int col = 0; col < 8; col++)
-			{
-				delete chessboard[row][col];
-			}
-		}
-		for (Figure* figure : white_player)
-		{
-			delete figure;
-		}
-		for (Figure* figure : black_player)
-		{
-			delete figure;
-		}
 	}
 
 	// Switch turns

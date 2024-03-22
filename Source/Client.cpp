@@ -11,6 +11,7 @@ int main(int argc, char* args[])
 	// Timer
 	int const frameDelay = 1000 / FPS;    // (Time delay for one frame) = (1000)/(frames per second)
 	Uint32 frameStart;
+	Uint32 elapsedTime;
 	Uint32 previousTime = SDL_GetTicks();
 	Uint32 lag = 0;
 	int deltaTime;
@@ -27,7 +28,7 @@ int main(int argc, char* args[])
 	while (game_engine->Running())
 	{
 		frameStart = SDL_GetTicks();
-		Uint32 elapsedTime = frameStart - previousTime;
+		elapsedTime = frameStart - previousTime;
 		previousTime = frameStart;
 		lag += elapsedTime;
 
@@ -39,7 +40,6 @@ int main(int argc, char* args[])
 			lag = 0;
 		}
 		else if (!allowEvent) {
-			// Check if cooldown period has ended
 			if (elapsedTime >= frameDelay) {
 				allowEvent = true;
 			}
@@ -53,6 +53,11 @@ int main(int argc, char* args[])
 				if (GameEngine::initialize_stage)
 				{
 					std::cout << "Main menu initialized!" << std::endl;
+					if (main_menu != nullptr)
+					{
+						delete main_menu;
+						main_menu = nullptr;
+					}
 					main_menu = new MainMenu();
 					GameEngine::mouse_left = false;
 					GameEngine::initialize_stage = false;
@@ -63,6 +68,7 @@ int main(int argc, char* args[])
 				if (GameEngine::stage != 0)
 				{
 					delete main_menu;
+					main_menu = nullptr;
 					GameEngine::initialize_stage = true;
 				}
 				break;
@@ -72,6 +78,11 @@ int main(int argc, char* args[])
 				if (GameEngine::initialize_stage)
 				{
 					std::cout << "Chessboard initialized!" << std::endl;
+					if (chessboard != nullptr)
+					{
+						delete chessboard;
+						chessboard = nullptr;
+					}
 					chessboard = new Chessboard(64);
 					GameEngine::mouse_left = false;
 					GameEngine::initialize_stage = false;
@@ -82,6 +93,7 @@ int main(int argc, char* args[])
 				if (GameEngine::stage != 1)
 				{
 					delete chessboard;
+					chessboard = nullptr;
 					GameEngine::initialize_stage = true;
 				}
 				break;
