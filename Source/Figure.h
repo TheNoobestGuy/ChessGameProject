@@ -12,7 +12,6 @@ class Figure
 		int size;
 		int player;
 		Field_ID occupied_field;
-		Texture texture;
 
 		// Movements
 		bool entangled;
@@ -26,7 +25,7 @@ class Figure
 
 	public:
 		Figure(std::string name, int figure_ID, Field_ID field_ID, bool color, int size);
-		~Figure();
+		virtual ~Figure();
 
 		// Possible plays
 		std::vector<Field_ID> available_moves;

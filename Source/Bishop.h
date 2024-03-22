@@ -18,6 +18,7 @@ class Bishop : public Figure
 		};
 
 	public:
+		~Bishop() {};
 		using Figure::Figure;
 
 		void PossibleMoves()

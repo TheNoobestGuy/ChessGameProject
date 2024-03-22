@@ -18,6 +18,7 @@ class Queen : public Figure
 		};
 
 	public:
+		~Queen() {};
 		using Figure::Figure;
 
 		void PossibleMoves()

@@ -128,6 +128,7 @@ void GameEngine::Clean()
 
 	SDL_DestroyWindow(window);
 	SDL_DestroyRenderer(renderer);
+	IMG_Quit();
 	SDL_Quit();
 
 	printf("Game Successfully Closed!\n");

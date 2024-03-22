@@ -37,7 +37,7 @@ Chessboard::Chessboard(int fields_size)
 	black_won = { "Black player won", {0, 0, 0}, GameEngine::CreateRectangle(SCREEN_WIDTH/2 - 150, SCREEN_HEIGHT/2 - 100, 300, 100) };
 	black_won.unselected = TextureMenager::LoadFont(black_won.text, black_won.color);
 
-	pat = { "Remis", {0, 0, 0}, GameEngine::CreateRectangle(SCREEN_WIDTH/2 - 150, SCREEN_HEIGHT/2 - 100, 300, 100) };
+	pat = { "Pat", {0, 0, 0}, GameEngine::CreateRectangle(SCREEN_WIDTH/2 - 150, SCREEN_HEIGHT/2 - 100, 300, 100) };
 	pat.unselected = TextureMenager::LoadFont(pat.text, pat.color);
 
 	reset = { "Press any key to go back to main menu or mouse to reset game", {0, 0, 0}, GameEngine::CreateRectangle(SCREEN_WIDTH/2 - 250, SCREEN_HEIGHT/2, 500, 50) };
@@ -59,7 +59,7 @@ Chessboard::~Chessboard()
 			chessboard[row][col] = nullptr;
 		}
 	}
-	for (Figure* figure : white_player)
+	for (auto figure : white_player)
 	{
 		delete figure;
 		figure = nullptr;

@@ -18,6 +18,7 @@ class Rook : public Figure
 		};
 
 	public:
+		~Rook() {};
 		using Figure::Figure;
 
 		void PossibleMoves()

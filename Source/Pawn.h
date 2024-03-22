@@ -32,6 +32,7 @@ class Pawn : public Figure
 		};
 
 	public:
+		~Pawn() {};
 		using Figure::Figure;
 
 		void PossibleMoves()

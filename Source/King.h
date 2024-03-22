@@ -18,6 +18,7 @@ class King : public Figure
 		};
 
 	public:
+		~King() {};
 		using Figure::Figure;
 
 		void PossibleMoves()

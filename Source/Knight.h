@@ -18,6 +18,7 @@ class Knight : public Figure
 		};
 
 	public:
+		~Knight() {};
 		using Figure::Figure;
 
 		void PossibleMoves()
