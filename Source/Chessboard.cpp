@@ -384,10 +384,11 @@ void Chessboard::RenderFigures()
 	SDL_RenderClear(GameEngine::renderer);
 
 	DrawBoard();
-	DrawFigures();
 
 	DrawMarksForMovesWhenPicked(white_player);
 	DrawMarksForMovesWhenPicked(black_player);
+
+	DrawFigures();
 
 	// Render the picked up figure in front
 	if (current_figure != nullptr)
@@ -1052,8 +1053,38 @@ void Chessboard::DrawMarksForMovesWhenPicked(std::vector<Figure*>& player_figure
 			{
 				if (field.available_move)
 				{
-					SDL_Rect possble_moves = GameEngine::CreateRectangle(field.x, field.y, fields_size);
-					TextureMenager::Draw(marks[0].texture, marks[0].srcRect, possble_moves);
+					bool attack = false;
+					if (figure->GetPlayer() == 1)
+					{
+						for (Figure* figure : black_player)
+						{
+							if (field == figure->GetField())
+							{
+								attack = true;
+							}
+						}
+					}
+					else
+					{
+						for (Figure* figure : white_player)
+						{
+							if (field == figure->GetField())
+							{
+								attack = true;
+							}
+						}
+					}
+
+					SDL_Rect possble_move = GameEngine::CreateRectangle(field.x, field.y, fields_size);
+
+					if (attack)
+					{
+						TextureMenager::Draw(marks[2].texture, marks[2].srcRect, possble_move);
+					}
+					else
+					{
+						TextureMenager::Draw(marks[0].texture, marks[0].srcRect, possble_move);
+					}
 				}
 			}
 		}

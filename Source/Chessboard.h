@@ -113,9 +113,10 @@ class Chessboard
 			{ TextureMenager::LoadTexture("Textures/Chessboard/blackSqr.png") }
 		};
 
-		Texture marks[2] =
+		Texture marks[3] =
 		{
 			{ TextureMenager::LoadTexture("Textures/Chessboard/mark.png") },
-			{ TextureMenager::LoadTexture("Textures/Chessboard/berth.png") }
+			{ TextureMenager::LoadTexture("Textures/Chessboard/berth.png") },
+			{ TextureMenager::LoadTexture("Textures/Chessboard/attack.png") }
 		};
 };
