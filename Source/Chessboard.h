@@ -80,6 +80,7 @@ class Chessboard
 		void EndGameCondition();
 		void PickedUpFigure();
 		void DrawMarksForMovesWhenPicked(std::vector<Figure*>& player_figures);
+		void PickedUpDestination();
 		void MoveFigure();
 
 	public:

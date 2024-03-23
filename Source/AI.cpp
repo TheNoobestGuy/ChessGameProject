@@ -2,6 +2,7 @@
 
 AI::AI(Field* chessboard[][8])
 {
+	this->best_move = { { 0, 0 }, nullptr };
 	this->converted_chessboard = new AI_Field*[8];
 
 	for (int row = 0; row < 8; row++)
@@ -25,11 +26,8 @@ void AI::UpdateAI(Field* chessboard[][8], std::vector<Figure*>& computer_figures
 {
 	AttachAvailableMoves(computer_figures);
 	ConvertBoard(chessboard);
-	AI_Field best_move = FindBestMove(converted_chessboard, 3);
 
-	std::cout << std::endl;
-	std::cout << "Figure: " << best_move.figure->GetName() << ", Ruch: " << best_move.field_ID.x << ", " << best_move.field_ID.y << std::endl;
-	std::cout << "ID: " << best_move.figure->GetID();
+	best_move = FindBestMove(converted_chessboard, 3);
 }
 
 void AI::AttachAvailableMoves(std::vector<Figure*>& computer_figures)
@@ -55,11 +53,6 @@ void AI::ConvertBoard(Field* chessboard[][8])
 			converted_chessboard[row][col].figure = chessboard[row][col]->figure;
 		}
 	}
-}
-
-void AI::MakeMove(Field* chessboard[][8])
-{
-
 }
 
 int AI::EvaluateBoard(AI_Field** chessboard)

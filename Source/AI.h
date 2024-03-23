@@ -28,16 +28,6 @@ struct AI_Field
 	Field_ID field_ID;
 	Figure* figure;
 
-	bool operator==(const Field_ID& field) const
-	{
-		return field.x == field_ID.x && field.y == field_ID.y;
-	}
-
-	bool operator!=(const Field_ID& field) const
-	{
-		return field.x != field_ID.x || field.y != field_ID.y;
-	}
-
 	~AI_Field()
 	{
 		figure = nullptr;
@@ -49,16 +39,11 @@ class AI
 	private:
 		std::vector<AI_Field> available_moves;
 		AI_Field** converted_chessboard;
-
-	public:
-		AI(Field* chessboard[][8]);
-		~AI();
+		AI_Field best_move;
 
 		// AI features
-		void UpdateAI(Field* chessboard[][8], std::vector<Figure*>& computer_figures);
 		void AttachAvailableMoves(std::vector<Figure*>& computer_figures);
 		void ConvertBoard(Field* chessboard[][8]);
-		void MakeMove(Field* chessboard[][8]);
 
 		// Minimax algorithm with alpha-beta pruning
 		int EvaluateBoard(AI_Field** chessboard);
@@ -68,4 +53,14 @@ class AI
 		AI_Field** CheckMove(AI_Field** chessboard, AI_Field& move);
 
 		void deleteChessboard(AI_Field** chessboard);
+
+	public:
+		AI(Field* chessboard[][8]);
+		~AI();
+
+		// AI update
+		void UpdateAI(Field* chessboard[][8], std::vector<Figure*>& computer_figures);
+
+		Figure* MoveFigure() { return best_move.figure; }
+		Field_ID MoveToField() { return best_move.field_ID; }
 };

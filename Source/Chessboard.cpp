@@ -15,7 +15,7 @@ Chessboard::Chessboard(int fields_size)
 	this->make_move = false;
 	this->move_to = { 0, 0 };
 	this->update_board = true;
-	this->computer_move = true;
+	this->computer_move = false;
 
 	this->white_player_value[0] = 0;
 	this->white_player_value[1] = 0;
@@ -248,6 +248,18 @@ void Chessboard::AIComponent()
 	{
 		Computer->UpdateAI(chessboard, black_player);
 
+		current_figure = Computer->MoveFigure();
+
+		if (current_figure != nullptr)
+		{
+			move_to.x = Computer->MoveToField().x;
+			move_to.y = Computer->MoveToField().y;
+
+			if (chessboard[move_to.y][move_to.x]->figure != nullptr)
+				move_to.attacked_figure = chessboard[move_to.y][move_to.x]->figure;
+		}
+
+		make_move = true;
 		computer_move = false;
 	}
 }
@@ -271,23 +283,17 @@ void Chessboard::SwitchTurns()
 
 void Chessboard::UpdateFigures()
 {
-	PickedUpFigure();
-
 	if (player == 0)
 	{
+		PickedUpFigure();
+
 		for (Figure* figure : white_player)
 		{
 			figure->PickUp(figure_picked_up);
 		}
 	}
-	else if (player == 1)
-	{
-		for (Figure* figure : black_player)
-		{
-			figure->PickUp(figure_picked_up);
-		}
-	}
 
+	PickedUpDestination();
 	MoveFigure();
 }
 
@@ -1167,7 +1173,7 @@ void Chessboard::DrawMarksForMovesWhenPicked(std::vector<Figure*>& player_figure
 	}
 }
 
-void Chessboard::MoveFigure()
+void Chessboard::PickedUpDestination()
 {
 	if (current_figure != nullptr)
 	{
@@ -1205,7 +1211,13 @@ void Chessboard::MoveFigure()
 				}
 			}
 		}
+	}
+}
 
+void Chessboard::MoveFigure()
+{
+	if (current_figure != nullptr)
+	{
 		// Send new field ID to figure and check if there is any collision with some other figures
 		if (make_move && !current_figure->PickedUp())
 		{
@@ -1259,10 +1271,11 @@ void Chessboard::MoveFigure()
 			}
 
 			// Make move
-			current_figure->ChangePosition( { move_to.x, move_to.y } );
+			current_figure->ChangePosition({ move_to.x, move_to.y });
 			update_board = true;
 			make_move = false;
 			current_figure = nullptr;
+			move_to.attacked_figure = nullptr;
 		}
 	}
 }
