@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <vector>
 #include <string>
-#include <stack>
 
 // SDL Libraries
 #include <SDL.h>

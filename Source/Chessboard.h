@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GameEngine.h"
+#include "AI.h"
 
 // Figures
 #include "Pawn.h"
@@ -9,27 +9,6 @@
 #include "Rook.h"
 #include "Queen.h"
 #include "King.h"
-
-struct Field
-{
-	// Field proporties
-	Field_ID field_ID;
-	int field_size;
-	int color;
-
-	// Figures
-	Figure* figure = nullptr;
-	bool en_passant = false;
-	bool field_under_attack[2] = { false, false };
-
-	// Rectangle
-	SDL_Rect field_rect = GameEngine::CreateRectangle(field_ID.x, field_ID.y, field_size);
-
-	~Field()
-	{
-		figure = nullptr;
-	}
-};
 
 struct FigureMove
 {
@@ -49,6 +28,12 @@ class Chessboard
 		// Properties
 		int player;
 		int fields_size;
+		bool computer_move;
+		int white_player_value[2];
+		int black_player_value[2];
+
+		// Computer
+		AI* Computer;
 
 		// Update
 		bool end_screen;
@@ -66,17 +51,13 @@ class Chessboard
 		Figure* white_king;
 		Figure* black_king;
 		Figure* current_figure;
+		Figure* figure_to_remove;
 		SDL_Rect* last_collision;
 		std::vector<Figure*> white_player;
 		std::vector<Figure*> black_player;
-		std::stack<Figure*> removed_figures;
 		
 		// End game
 		Text white_won, black_won, pat, reset;
-
-	public:
-		Chessboard(int fields_size);
-		~Chessboard();
 
 		// Create objects
 		void CreateBoard();
@@ -85,25 +66,42 @@ class Chessboard
 		// Board features
 		void DrawBoard();
 		void DrawFigures();
-
-		void BoardUpdate();
-		void SwitchTurns();
-
-		void UpdateFigures();
-		void RenderFigures();
-
-		void EndGame();
+		void EvaluateBoardValue();
+		void RemoveFromBoard();
+		void AttachPositionsToBoard();
 
 		// Figures features
+		void HasBecomeQueen();
 		void MarkFieldsUnderAttack(std::vector<Figure*>& player_figures);
 		void CalculateFigureMoves(std::vector<Figure*>& player_figures);
 		void KingMechanic(std::vector<Figure*>& player_figures, std::vector<Figure*>& opposite_player_figures, Figure* king);
 		void CheckForEntangling(std::vector<Figure*>& player_figures, Figure* opposite_king);
 		void ApplyEntangledMoves(std::vector<Figure*>& player_figures);
-		void EndGameCondition(std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures);
+		void EndGameCondition();
 		void PickedUpFigure();
 		void DrawMarksForMovesWhenPicked(std::vector<Figure*>& player_figures);
 		void MoveFigure();
+
+	public:
+		Chessboard(int fields_size);
+		~Chessboard();
+
+		// Crucial functions
+		void BoardUpdate();
+		void AIComponent();
+		void SwitchTurns();
+		void UpdateFigures();
+		void RenderFigures();
+		void EndGame();
+
+		// Properties
+		int GetWhiteFiguresValue() { return white_player_value[0]; }
+		int GetWhiteConqueredValue() { return white_player_value[1]; }
+		int GetBlackFiguresValue() { return black_player_value[0]; }
+		int GetBlackConqueredValue() { return black_player_value[1]; }
+
+		std::vector<Figure*>& GetWhitePlayer() { return white_player;  }
+		std::vector<Figure*>& GetBlackPlayer() { return black_player;  }
 
 	private:
 		Texture fields_colors[2] =

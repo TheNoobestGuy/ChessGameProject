@@ -34,7 +34,7 @@ class Figure
 		std::vector<Field_ID> way_to_opposite_king;
 		std::vector<Field_ID> moves_list;
 
-		// Figure feature
+		// Figure features
 		virtual void PossibleMoves() = 0;
 		void PickUp(bool &figure_picked_up);
 
@@ -47,6 +47,7 @@ class Figure
 		int GetID() { return ID; }
 		Field_ID GetField() { return occupied_field; }
 		int GetPlayer() { return player; }
+		int GetValue() { return value; }
 
 		bool IsItFirstMove() { return first_move; }
 		void NotFirstMove() { first_move = false; }

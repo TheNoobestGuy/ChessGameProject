@@ -15,16 +15,26 @@ Chessboard::Chessboard(int fields_size)
 	this->make_move = false;
 	this->move_to = { 0, 0 };
 	this->update_board = true;
+	this->computer_move = true;
+
+	this->white_player_value[0] = 0;
+	this->white_player_value[1] = 0;
+	this->black_player_value[0] = 0;
+	this->black_player_value[1] = 0;
 
 	// Figures
 	this->white_king = nullptr;
 	this->black_king = nullptr;
 	this->current_figure = nullptr;
 	this->last_collision = nullptr;
+	this->figure_to_remove = nullptr;
 
 	// Create chessboard
 	CreateBoard();
 	CreateFigures();
+
+	// Computer
+	Computer = new AI(chessboard);
 
 	// Text test
 	white_won = { "White player won", {0, 0, 0}, GameEngine::CreateRectangle(SCREEN_WIDTH/2 - 150, SCREEN_HEIGHT/2 - 100, 300, 100)};
@@ -46,6 +56,10 @@ Chessboard::~Chessboard()
 	black_king = nullptr;
 	current_figure = nullptr;
 	last_collision = nullptr;
+	figure_to_remove = nullptr;
+
+	delete Computer;
+	Computer = nullptr;
 
 	for (int row = 0; row < 8; row++)
 	{
@@ -161,7 +175,7 @@ void Chessboard::DrawBoard()
 	{
 		for (int col = 0; col < 8; col++)
 		{
-			if (chessboard[row][col]->color)
+			if (chessboard[row][col]->color == 1)
 				TextureMenager::Draw(fields_colors[1].texture, fields_colors[1].srcRect, chessboard[row][col]->field_rect);
 			else
 				TextureMenager::Draw(fields_colors[0].texture, fields_colors[0].srcRect, chessboard[row][col]->field_rect);
@@ -186,115 +200,21 @@ void Chessboard::BoardUpdate()
 {
 	if (update_board)
 	{
+		if (player == 1)
+			computer_move = true;
 		checkmate = false;
 
-		// Remove from board conquered figures
-		while (!removed_figures.empty())
-		{
-			if (removed_figures.top()->GetPlayer() == 0)
-			{
-				for (int figure = 0; figure < white_player.size(); figure++)
-				{
-					if (white_player[figure]->GetID() == removed_figures.top()->GetID())
-					{
-						delete white_player[figure];
-						white_player[figure] = nullptr;
-						white_player.erase(white_player.begin() + figure);
-						removed_figures.pop();
-						break;
-					}
-				}
-			}
-			else if (removed_figures.top()->GetPlayer() == 1)
-			{
-				for (int figure = 0; figure < black_player.size(); figure++)
-				{
-					if (black_player[figure]->GetID() == removed_figures.top()->GetID())
-					{
-						delete black_player[figure];
-						black_player[figure] = nullptr;
-						black_player.erase(black_player.begin() + figure);
-						removed_figures.pop();
-						break;
-					}
-				}
-			}
-		}
+		// Evaluate value of board
+		EvaluateBoardValue();
 
-		// Check does any pawn has become queen
-		for (int figure = 0; figure < white_player.size(); figure++)
-		{
-			if (white_player[figure]->GetName() == "Pawn" && white_player[figure]->GetField().y == 0)
-			{
-				int tempID = white_player[figure]->GetID();
-				Field_ID tempField = white_player[figure]->GetField();
+		// Remove from board conquered figure
+		RemoveFromBoard();
 
-				delete white_player[figure];
-				white_player[figure] = nullptr;
-				white_player.erase(white_player.begin() + figure);
+		// Check does any pawn has become a queen
+		HasBecomeQueen();
 
-				white_player.push_back(new Queen("Queen", tempID, tempField, 0, 64, 9));
-				white_player.back()->PossibleMoves();
-			}
-		}
-		for (int figure = 0; figure < black_player.size(); figure++)
-		{
-			if (black_player[figure]->GetName() == "Pawn" && black_player[figure]->GetField().y == 7)
-			{
-				int tempID = black_player[figure]->GetID();
-				Field_ID tempField = black_player[figure]->GetField();
-
-				delete black_player[figure];
-				black_player[figure] = nullptr;
-				black_player.erase(black_player.begin() + figure);
-
-				black_player.push_back(new Queen("Queen", tempID, tempField, 1, 64, 9));
-				black_player.back()->PossibleMoves();
-			}
-		}
-
-		// Attach positions of figures to board
-		for (int row = 0; row < 8; row++)
-		{
-			for (int col = 0; col < 8; col++)
-			{
-				bool appended_figure = false;
-
-				for (Figure* figure : white_player)
-				{
-					if (row == figure->GetField().y && col == figure->GetField().x)
-					{
-						chessboard[row][col]->figure = figure;
-						chessboard[row][col]->figure->Release();
-						appended_figure = true;
-						break;
-					}
-				}
-
-				if (!appended_figure)
-				{
-					for (Figure* figure : black_player)
-					{
-						if (row == figure->GetField().y && col == figure->GetField().x)
-						{
-							chessboard[row][col]->figure = figure;
-							chessboard[row][col]->figure->Release();
-							appended_figure = true;
-							break;
-						}
-					}
-				}
-
-				if (!appended_figure)
-				{
-					chessboard[row][col]->figure = nullptr;
-				}
-
-				chessboard[row][col]->field_under_attack[0] = false;
-				chessboard[row][col]->field_under_attack[1] = false;
-				chessboard[row][col]->en_passant = false;
-			}
-		}
+		// Attach positions of figures to a board
+		AttachPositionsToBoard();
 
 		// Calculate available moves for figures
 		CalculateFigureMoves(white_player);
@@ -315,10 +235,20 @@ void Chessboard::BoardUpdate()
 		KingMechanic(white_player, black_player, white_king);
 		KingMechanic(black_player, white_player, black_king);
 
-		// End game conditions check
-		EndGameCondition(white_player, black_player);
+		// End game condition check
+		EndGameCondition();
 
 		update_board = false;
+	}
+}
+
+void Chessboard::AIComponent()
+{
+	if (computer_move)
+	{
+		Computer->UpdateAI(chessboard, black_player);
+
+		computer_move = false;
 	}
 }
 
@@ -379,6 +309,152 @@ void Chessboard::RenderFigures()
 	SDL_RenderPresent(GameEngine::renderer);
 }
 
+void Chessboard::EvaluateBoardValue()
+{
+	white_player_value[0] = 0;
+	black_player_value[0] = 0;
+
+	for (Figure* figure : white_player)
+	{
+		white_player_value[0] += figure->GetValue();
+	}
+
+	for (Figure* figure : black_player)
+	{
+		black_player_value[0] += figure->GetValue();
+	}
+
+	if (figure_to_remove != nullptr)
+	{
+		if (figure_to_remove->GetPlayer() == 0)
+		{
+			white_player_value[1] += figure_to_remove->GetValue();
+			white_player_value[0] -= figure_to_remove->GetValue();
+		}
+		else if (figure_to_remove->GetPlayer() == 1)
+		{
+			black_player_value[1] += figure_to_remove->GetValue();
+			black_player_value[0] -= figure_to_remove->GetValue();
+		}
+	}
+}
+
+void Chessboard::RemoveFromBoard()
+{
+	if (figure_to_remove != nullptr)
+	{
+		if (figure_to_remove->GetPlayer() == 0)
+		{
+			for (int figure = 0; figure < white_player.size(); figure++)
+			{
+				if (white_player[figure]->GetID() == figure_to_remove->GetID())
+				{
+					delete white_player[figure];
+					white_player[figure] = nullptr;
+					white_player.erase(white_player.begin() + figure);
+
+					figure_to_remove = nullptr;
+					break;
+				}
+			}
+		}
+		else if (figure_to_remove->GetPlayer() == 1)
+		{
+			for (int figure = 0; figure < black_player.size(); figure++)
+			{
+				if (black_player[figure]->GetID() == figure_to_remove->GetID())
+				{
+					delete black_player[figure];
+					black_player[figure] = nullptr;
+					black_player.erase(black_player.begin() + figure);
+
+					figure_to_remove = nullptr;
+					break;
+				}
+			}
+		}
+	}
+}
+
+void Chessboard::HasBecomeQueen()
+{
+	for (int figure = 0; figure < white_player.size(); figure++)
+	{
+		if (white_player[figure]->GetName() == "Pawn" && white_player[figure]->GetField().y == 0)
+		{
+			int tempID = white_player[figure]->GetID();
+			Field_ID tempField = white_player[figure]->GetField();
+
+			delete white_player[figure];
+			white_player[figure] = nullptr;
+			white_player.erase(white_player.begin() + figure);
+
+			white_player.push_back(new Queen("Queen", tempID, tempField, 0, 64, 9));
+			white_player.back()->PossibleMoves();
+		}
+	}
+	for (int figure = 0; figure < black_player.size(); figure++)
+	{
+		if (black_player[figure]->GetName() == "Pawn" && black_player[figure]->GetField().y == 7)
+		{
+			int tempID = black_player[figure]->GetID();
+			Field_ID tempField = black_player[figure]->GetField();
+
+			delete black_player[figure];
+			black_player[figure] = nullptr;
+			black_player.erase(black_player.begin() + figure);
+
+			black_player.push_back(new Queen("Queen", tempID, tempField, 1, 64, 9));
+			black_player.back()->PossibleMoves();
+		}
+	}
+}
+
+void Chessboard::AttachPositionsToBoard()
+{
+	for (int row = 0; row < 8; row++)
+	{
+		for (int col = 0; col < 8; col++)
+		{
+			bool appended_figure = false;
+
+			for (Figure* figure : white_player)
+			{
+				if (row == figure->GetField().y && col == figure->GetField().x)
+				{
+					chessboard[row][col]->figure = figure;
+					chessboard[row][col]->figure->Release();
+					appended_figure = true;
+					break;
+				}
+			}
+
+			if (!appended_figure)
+			{
+				for (Figure* figure : black_player)
+				{
+					if (row == figure->GetField().y && col == figure->GetField().x)
+					{
+						chessboard[row][col]->figure = figure;
+						chessboard[row][col]->figure->Release();
+						appended_figure = true;
+						break;
+					}
+				}
+			}
+
+			if (!appended_figure)
+			{
+				chessboard[row][col]->figure = nullptr;
+			}
+
+			chessboard[row][col]->field_under_attack[0] = false;
+			chessboard[row][col]->field_under_attack[1] = false;
+			chessboard[row][col]->en_passant = false;
+		}
+	}
+}
+
 void Chessboard::KingMechanic(std::vector<Figure*>& player_figures, std::vector<Figure*>& opposite_player_figures, Figure* king)
 {
 	// Deduce opposite player
@@ -398,8 +474,6 @@ void Chessboard::KingMechanic(std::vector<Figure*>& player_figures, std::vector<
 		}
 	}
 	king->available_moves = buffor;
-
-	for (auto x : chessboard)
 
 	// Check is there a checkmate and calculate possible moves to save king if there are any
 	if (chessboard[king->GetField().y][king->GetField().x]->field_under_attack[opposite_player])
@@ -562,12 +636,12 @@ void Chessboard::ApplyEntangledMoves(std::vector<Figure*>& player_figures)
 	}
 }
 
-void Chessboard::EndGameCondition(std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures)
+void Chessboard::EndGameCondition()
 {
 	no_moves[0] = true;
 	no_moves[1] = true;
 
-	for (Figure* figure : player_figures)
+	for (Figure* figure : white_player)
 	{
 		if (!figure->available_moves.empty())
 		{
@@ -576,7 +650,7 @@ void Chessboard::EndGameCondition(std::vector<Figure*>& player_figures, std::vec
 		}
 	}
 
-	for (Figure* figure : computer_figures)
+	for (Figure* figure : black_player)
 	{
 		if (!figure->available_moves.empty())
 		{
@@ -1144,7 +1218,7 @@ void Chessboard::MoveFigure()
 					{
 						if (figure->GetID() == move_to.attacked_figure->GetID())
 						{
-							removed_figures.push(figure);
+							figure_to_remove = figure;
 							break;
 						}
 					}
@@ -1155,7 +1229,7 @@ void Chessboard::MoveFigure()
 					{
 						if (figure->GetID() == move_to.attacked_figure->GetID())
 						{
-							removed_figures.push(figure);
+							figure_to_remove = figure;
 							break;
 						}
 					}
@@ -1168,11 +1242,11 @@ void Chessboard::MoveFigure()
 				{
 					if (player == 0)
 					{
-						removed_figures.push(chessboard[move_to.y + 1][move_to.x]->figure);
+						figure_to_remove = chessboard[move_to.y + 1][move_to.x]->figure;
 					}
 					else if (player == 1)
 					{
-						removed_figures.push(chessboard[move_to.y - 1][move_to.x]->figure);
+						figure_to_remove = chessboard[move_to.y - 1][move_to.x]->figure;
 					}
 				}
 				else if (move_to.attacked_figure == nullptr)
