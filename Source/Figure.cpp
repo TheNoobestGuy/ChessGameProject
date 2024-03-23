@@ -10,9 +10,9 @@ Figure::Figure(std::string name, int ID, Field_ID field_ID, bool color, int size
 	this->value = value;
 
 	if (color == 0)
-		this->player = 1;
+		this->player = 0;
 	else if (color == 1)
-		this->player = 2;
+		this->player = 1;
 
 	this->entangled = false;
 	this->en_passant = false;

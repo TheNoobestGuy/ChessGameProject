@@ -53,6 +53,7 @@ class Chessboard
 		// Update
 		bool end_screen;
 		bool checkmate;
+		bool no_moves[2];
 		bool figure_picked_up;
 		bool make_move;
 		FigureMove move_to;
@@ -91,13 +92,15 @@ class Chessboard
 		void UpdateFigures();
 		void RenderFigures();
 
+		void EndGame();
+
 		// Figures features
 		void MarkFieldsUnderAttack(std::vector<Figure*>& player_figures);
 		void CalculateFigureMoves(std::vector<Figure*>& player_figures);
 		void KingMechanic(std::vector<Figure*>& player_figures, std::vector<Figure*>& opposite_player_figures, Figure* king);
 		void CheckForEntangling(std::vector<Figure*>& player_figures, Figure* opposite_king);
 		void ApplyEntangledMoves(std::vector<Figure*>& player_figures);
-		void EndGameConditions(std::vector<Figure*>& player_figures, Figure* king);
+		void EndGameCondition(std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures);
 		void PickedUpFigure();
 		void DrawMarksForMovesWhenPicked(std::vector<Figure*>& player_figures);
 		void MoveFigure();

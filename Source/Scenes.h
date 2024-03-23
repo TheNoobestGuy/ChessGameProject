@@ -69,4 +69,5 @@ void Chessboard_scene(Chessboard* chessboard)
 	chessboard->UpdateFigures();
 	chessboard->RenderFigures();
 	chessboard->SwitchTurns();
+	chessboard->EndGame();
 }
