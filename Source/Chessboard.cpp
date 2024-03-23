@@ -260,7 +260,6 @@ void Chessboard::AIComponent()
 		}
 
 		make_move = true;
-		computer_move = false;
 	}
 }
 
@@ -291,9 +290,10 @@ void Chessboard::UpdateFigures()
 		{
 			figure->PickUp(figure_picked_up);
 		}
+
+		PickedUpDestination();
 	}
 
-	PickedUpDestination();
 	MoveFigure();
 }
 
@@ -309,7 +309,7 @@ void Chessboard::RenderFigures()
 	DrawFigures();
 
 	// Render the picked up figure in front
-	if (current_figure != nullptr)
+	if (current_figure != nullptr && !computer_move)
 		current_figure->Render();
 
 	SDL_RenderPresent(GameEngine::renderer);
@@ -1276,6 +1276,12 @@ void Chessboard::MoveFigure()
 			make_move = false;
 			current_figure = nullptr;
 			move_to.attacked_figure = nullptr;
+
+			if (computer_move)
+			{
+				std::this_thread::sleep_for(std::chrono::milliseconds(400));
+				computer_move = false;
+			}
 		}
 	}
 }

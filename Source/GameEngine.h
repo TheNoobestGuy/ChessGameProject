@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <vector>
 #include <string>
+#include <chrono>
+#include <thread>
 
 // SDL Libraries
 #include <SDL.h>

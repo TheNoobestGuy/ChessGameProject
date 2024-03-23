@@ -25,9 +25,17 @@ AI::~AI()
 void AI::UpdateAI(Field* chessboard[][8], std::vector<Figure*>& computer_figures)
 {
 	AttachAvailableMoves(computer_figures);
-	ConvertBoard(chessboard);
 
-	best_move = FindBestMove(converted_chessboard, 3);
+	if (!available_moves.empty())
+	{
+		ConvertBoard(chessboard);
+
+		best_move = FindBestMove(converted_chessboard, 3);
+	}
+	else
+	{
+		best_move = { { 0, 0 }, nullptr };
+	}
 }
 
 void AI::AttachAvailableMoves(std::vector<Figure*>& computer_figures)
