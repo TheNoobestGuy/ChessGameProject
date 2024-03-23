@@ -1,8 +1,5 @@
 #include "Chessboard.h"
 
-bool Chessboard::reset_game;
-bool Chessboard::end_game;
-
 Chessboard::Chessboard(int fields_size)
 {
 	// Properties
@@ -10,10 +7,7 @@ Chessboard::Chessboard(int fields_size)
 	this->fields_size = fields_size;
 
 	// Update
-	this->quit = false;
 	this->end_screen = false;
-	this->end_game = false;
-	this->reset_game = false;
 	this->checkmate = false;
 	this->figure_picked_up = false;
 	this->make_move = false;
@@ -106,46 +100,46 @@ void Chessboard::CreateFigures()
 	std::string name = "Pawn";
 	for (int i = 0; i < 8; i++, ID++)
 	{
-		white_player.push_back(new Pawn(name, ID, chessboard[6][i]->field_ID, 0, 64));
-		black_player.push_back(new Pawn(name, ID, chessboard[1][i]->field_ID, 1, 64));
+		white_player.push_back(new Pawn(name, ID, chessboard[6][i]->field_ID, 0, 64, 1));
+		black_player.push_back(new Pawn(name, ID, chessboard[1][i]->field_ID, 1, 64, 1));
 	}
 
 	// Knights
 	name = "Knight";
 	for (int i = 1; i < 8; i+=5, ID++)
 	{
-		white_player.push_back(new Knight(name, ID, chessboard[7][i]->field_ID, 0, 64));
-		black_player.push_back(new Knight(name, ID, chessboard[0][i]->field_ID, 1, 64));
+		white_player.push_back(new Knight(name, ID, chessboard[7][i]->field_ID, 0, 64, 3));
+		black_player.push_back(new Knight(name, ID, chessboard[0][i]->field_ID, 1, 64, 3));
 	}
 
 	// Bishops
 	name = "Bishop";
 	for (int i = 2; i < 8; i+=3, ID++)
 	{
-		white_player.push_back(new Bishop(name, ID, chessboard[7][i]->field_ID, 0, 64));
-		black_player.push_back(new Bishop(name, ID, chessboard[0][i]->field_ID, 1, 64));
+		white_player.push_back(new Bishop(name, ID, chessboard[7][i]->field_ID, 0, 64, 3));
+		black_player.push_back(new Bishop(name, ID, chessboard[0][i]->field_ID, 1, 64, 3));
 	}
 
 	// Rooks
 	name = "Rook";
 	for (int i = 0; i < 8; i+=7, ID++)
 	{
-		white_player.push_back(new Rook(name, ID, chessboard[7][i]->field_ID, 0, 64));
-		black_player.push_back(new Rook(name, ID, chessboard[0][i]->field_ID, 1, 64));
+		white_player.push_back(new Rook(name, ID, chessboard[7][i]->field_ID, 0, 64, 5));
+		black_player.push_back(new Rook(name, ID, chessboard[0][i]->field_ID, 1, 64, 5));
 	}
 
 	// Queens
 	name = "Queen";
-	white_player.push_back(new Queen(name, ID, chessboard[7][3]->field_ID, 0, 64));
-	black_player.push_back(new Queen(name, ID, chessboard[0][3]->field_ID, 1, 64));
+	white_player.push_back(new Queen(name, ID, chessboard[7][3]->field_ID, 0, 64, 9));
+	black_player.push_back(new Queen(name, ID, chessboard[0][3]->field_ID, 1, 64, 9));
 
 	// Kings
 	name = "King";
 	ID++;
-	white_player.push_back(new King(name, ID, chessboard[7][4]->field_ID, 0, 64));
+	white_player.push_back(new King(name, ID, chessboard[7][4]->field_ID, 0, 64, 0));
 	white_king = white_player.back();
 
-	black_player.push_back(new King(name, ID, chessboard[0][4]->field_ID, 1, 64));
+	black_player.push_back(new King(name, ID, chessboard[0][4]->field_ID, 1, 64, 0));
 	black_king = black_player.back();
 
 	// Append moves
@@ -237,7 +231,7 @@ void Chessboard::BoardUpdate()
 				white_player[figure] = nullptr;
 				white_player.erase(white_player.begin() + figure);
 
-				white_player.push_back(new Queen("Queen", tempID, tempField, 0, 64));
+				white_player.push_back(new Queen("Queen", tempID, tempField, 0, 64, 9));
 				white_player.back()->PossibleMoves();
 			}
 		}
@@ -252,7 +246,7 @@ void Chessboard::BoardUpdate()
 				black_player[figure] = nullptr;
 				black_player.erase(black_player.begin() + figure);
 
-				black_player.push_back(new Queen("Queen", tempID, tempField, 1, 64));
+				black_player.push_back(new Queen("Queen", tempID, tempField, 1, 64, 9));
 				black_player.back()->PossibleMoves();
 			}
 		}
@@ -319,28 +313,27 @@ void Chessboard::BoardUpdate()
 		KingMechanic(white_player, black_player, white_king);
 		KingMechanic(black_player, white_player, black_king);
 
+		// End game conditions check
+		std::cout << "Turn: " << std::endl;
+		EndGameConditions(white_player, white_king);
+		if (!GameEngine::end_game && !GameEngine::reset_game && GameEngine::isRunning)
+			EndGameConditions(black_player, black_king);
+
 		update_board = false;
 	}
 }
 
 void Chessboard::SwitchTurns()
 {
-	// End game conditions check
-	EndGameConditions(white_player, white_king);
-	if (!end_game && !reset_game && !quit)
-		EndGameConditions(black_player, black_king);
-
-	if (quit)
-	{
-		GameEngine::stage = 2;
-	}
-	else if (end_game)
+	if (GameEngine::end_game)
 	{
 		GameEngine::stage = 0;
+		GameEngine::end_game = false;
 	}
-	else if (reset_game)
+	else if (GameEngine::reset_game)
 	{
 		GameEngine::initialize_stage = true;
+		GameEngine::reset_game = false;
 	}
 
 	// Switch turns
@@ -594,6 +587,19 @@ void Chessboard::EndGameConditions(std::vector<Figure*>& player_figures, Figure*
 		}
 	}
 
+	for (Figure* figure : player_figures)
+	{
+		std::cout << figure->GetName() << std::endl;
+		for (auto x : figure->available_moves)
+		{
+			std::cout << x.x << ", " << x.y << std::endl;
+		}
+	}
+
+
+	std::cout << "Checkmate: " << checkmate << ", Player: " << king->GetPlayer() << std::endl;
+	std::cout << "no_moves: " << no_moves << ", Player: " << king->GetPlayer() << std::endl;
+
 	// Win by checkmate
 	if (no_moves && checkmate)
 	{
@@ -626,17 +632,17 @@ void Chessboard::EndGameConditions(std::vector<Figure*>& player_figures, Figure*
 			switch (event.type)
 			{
 				case SDL_QUIT:
-					quit = true;
 					end_screen = false;
+					GameEngine::isRunning = false;
 					break;
 
 				case SDL_KEYDOWN:
-					end_game = true;
+					GameEngine::end_game = true;
 					end_screen = false;
 					break;
 
 				case SDL_MOUSEBUTTONDOWN:
-					reset_game = true;
+					GameEngine::reset_game = true;
 					end_screen = false;
 					break;
 
@@ -677,12 +683,12 @@ void Chessboard::EndGameConditions(std::vector<Figure*>& player_figures, Figure*
 					break;
 
 				case SDL_KEYDOWN:
-					end_game = true;
+					GameEngine::end_game = true;
 					end_screen = false;
 					break;
 
 				case SDL_MOUSEBUTTONDOWN:
-					reset_game = true;
+					GameEngine::reset_game = true;
 					end_screen = false;
 					break;
 
@@ -790,7 +796,6 @@ void Chessboard::CalculateFigureMoves(std::vector<Figure*>& player_figures)
 				int move_x = figure->GetField().x + figure->moves_list[move].x;
 				int move_y = figure->GetField().y + figure->moves_list[move].y;
 
-				// Check for collisons with other figures
 				if ((move_x >= 0 && move_x < 8) && (move_y >= 0 && move_y < 8))
 				{
 					if (chessboard[move_y][move_x]->figure != nullptr)

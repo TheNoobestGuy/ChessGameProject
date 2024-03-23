@@ -11,6 +11,7 @@ class Figure
 		int color;
 		int size;
 		int player;
+		int value;
 		Field_ID occupied_field;
 
 		// Movements
@@ -24,7 +25,7 @@ class Figure
 		SDL_Rect motion_rect;
 
 	public:
-		Figure(std::string name, int figure_ID, Field_ID field_ID, bool color, int size);
+		Figure(std::string name, int figure_ID, Field_ID field_ID, bool color, int size, int value);
 		virtual ~Figure();
 
 		// Possible plays

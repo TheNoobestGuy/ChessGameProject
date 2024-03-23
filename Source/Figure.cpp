@@ -1,12 +1,13 @@
 #include "Figure.h"
 
-Figure::Figure(std::string name, int ID, Field_ID field_ID, bool color, int size)
+Figure::Figure(std::string name, int ID, Field_ID field_ID, bool color, int size, int value)
 {
 	this->name = name;
 	this->ID = ID;
 	this->occupied_field = field_ID;
 	this->color = color;
 	this->size = size;
+	this->value = value;
 
 	if (color == 0)
 		this->player = 1;

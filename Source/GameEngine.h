@@ -33,6 +33,10 @@ class GameEngine
 		// Load scene
 		static int stage;
 		static bool initialize_stage;
+
+		// Game scene
+		static bool reset_game;
+		static bool end_game;
 		
 		// Mouse handler
 		static bool mouse_left;

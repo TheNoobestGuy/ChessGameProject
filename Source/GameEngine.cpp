@@ -1,5 +1,4 @@
 #include "GameEngine.h"
-#include "Chessboard.h"
 
 // Renderer
 SDL_Renderer* GameEngine::renderer = nullptr;
@@ -8,6 +7,10 @@ SDL_Renderer* GameEngine::renderer = nullptr;
 bool GameEngine::isRunning;
 int GameEngine::stage;
 bool GameEngine::initialize_stage;
+
+// Game Handler
+bool  GameEngine::reset_game;
+bool  GameEngine::end_game;
 
 // Keyboard tracer
 bool GameEngine::key_down;
@@ -46,24 +49,24 @@ void GameEngine::Init(const char* title, int x, int y, int width, int height, bo
 				SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 				printf("Renderer has been created!\n");
 
-				isRunning = true;
+				GameEngine::isRunning = true;
 			}
 			else
 			{
 				printf("Render couldn't be created: %s\n", SDL_GetError());
-				isRunning = false;
+				GameEngine::isRunning = false;
 			}
 		}
 		else
 		{
 			printf("Window couldn't be created: %s\n", SDL_GetError());
-			isRunning = false;
+			GameEngine::isRunning = false;
 		}
 	}
 	else
 	{
 		printf("Subsystem failed to initialise: %s\n", SDL_GetError());
-		isRunning = false;
+		GameEngine::isRunning = false;
 	}
 }
 
@@ -78,20 +81,20 @@ void GameEngine::EventHandler(bool allowEvent)
 		switch (event.type)
 		{
 		case SDL_QUIT:
-			isRunning = false;
+			GameEngine::isRunning = false;
 			break;
 
 		case SDL_MOUSEBUTTONDOWN:
 			if (event.button.button == SDL_BUTTON_LEFT)
 			{
-				mouse_left = true;
+				GameEngine::mouse_left = true;
 			}
 			break;
 
 		case SDL_MOUSEBUTTONUP:
 			if (event.button.button == SDL_BUTTON_LEFT)
 			{
-				mouse_left = false;
+				GameEngine::mouse_left = false;
 			}
 			break;
 
@@ -100,20 +103,20 @@ void GameEngine::EventHandler(bool allowEvent)
 			{
 				if (event.key.keysym.sym == SDLK_r)
 				{
-					Chessboard::reset_game = true;
+					GameEngine::reset_game = true;
 				}
 
 				if (event.key.keysym.sym == SDLK_ESCAPE)
 				{
-					Chessboard::end_game = true;
+					GameEngine::end_game = true;
 				}
 			}
 
-			key_down = true;
+			GameEngine::key_down = true;
 			break;
 
 		case SDL_KEYUP:
-			key_down = false;
+			GameEngine::key_down = false;
 			break;
 
 		default:

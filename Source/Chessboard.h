@@ -52,7 +52,6 @@ class Chessboard
 
 		// Update
 		bool end_screen;
-		bool quit;
 		bool checkmate;
 		bool figure_picked_up;
 		bool make_move;
@@ -75,9 +74,6 @@ class Chessboard
 		Text white_won, black_won, pat, reset;
 
 	public:
-		static bool reset_game;
-		static bool end_game;
-
 		Chessboard(int fields_size);
 		~Chessboard();
 
