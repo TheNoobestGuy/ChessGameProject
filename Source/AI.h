@@ -47,7 +47,7 @@ class AI
 
 		// Minimax algorithm with alpha-beta pruning
 		int EvaluateBoard(AI_Field** chessboard);
-		int MiniMax(AI_Field** chessboard, int depth, int alpha, int beta, bool maximizing_player);
+		int MiniMax(AI_Field** chessboard, int depth, int alpha, int beta);
 
 		AI_Field FindBestMove(AI_Field** chessboard, int depth);
 		AI_Field** CheckMove(AI_Field** chessboard, AI_Field& move);

@@ -25,7 +25,7 @@ class Figure
 		SDL_Rect motion_rect;
 
 	public:
-		Figure(std::string name, int figure_ID, Field_ID field_ID, bool color, int size, int value);
+		Figure(std::string name, int figure_ID, Field_ID field_ID, int color, int size, int value);
 		virtual ~Figure();
 
 		// Possible plays
@@ -43,10 +43,13 @@ class Figure
 		virtual void Render() = 0;
 
 		// Properties
-		std::string GetName() { return name; }
 		int GetID() { return ID; }
+		std::string GetName() { return name; }
 		Field_ID GetField() { return occupied_field; }
+
+		void SetPlayer(int player) { this->player = player; }
 		int GetPlayer() { return player; }
+		int GetColor() { return color; }
 		int GetValue() { return value; }
 
 		bool IsItFirstMove() { return first_move; }

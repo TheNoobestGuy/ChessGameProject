@@ -30,7 +30,7 @@ void AI::UpdateAI(Field* chessboard[][8], std::vector<Figure*>& computer_figures
 	{
 		ConvertBoard(chessboard);
 
-		best_move = FindBestMove(converted_chessboard, 3);
+		best_move = FindBestMove(converted_chessboard, 2);
 	}
 	else
 	{
@@ -79,53 +79,29 @@ int AI::EvaluateBoard(AI_Field** chessboard)
 	return value;
 }
 
-int AI::MiniMax(AI_Field** chessboard, int depth, int alpha, int beta, bool maximizing_player)
+int AI::MiniMax(AI_Field** chessboard, int depth, int alpha, int beta)
 {
 	if (depth == 0)
 		return EvaluateBoard(chessboard);
 
-	if (maximizing_player)
+	int max_eval = INT_MIN;
+
+	for (AI_Field move : available_moves)
 	{
-		int max_eval = INT_MIN;
+		AI_Field** newChessboard = CheckMove(chessboard, move);
+		int eval = MiniMax(newChessboard, depth - 1, alpha, beta);
+		max_eval = std::max(max_eval, eval);
+		alpha = std::max(alpha, eval);
 
-		for (AI_Field move : available_moves)
+		deleteChessboard(newChessboard);
+
+		if (beta <= alpha)
 		{
-			AI_Field** newChessboard = CheckMove(chessboard, move);
-			int eval = MiniMax(newChessboard, depth - 1, alpha, beta, maximizing_player);
-			max_eval = std::max(max_eval, eval);
-			alpha = std::max(alpha, eval);
-
-			deleteChessboard(newChessboard);
-
-			if (beta <= alpha)
-			{
-				break;
-			}
+			break;
 		}
-
-		return max_eval;
 	}
-	else
-	{
-		int min_eval = INT_MAX;
 
-		for (AI_Field move : available_moves)
-		{
-			AI_Field** newChessboard = CheckMove(chessboard, move);
-			int eval = MiniMax(newChessboard, depth - 1, alpha, beta, maximizing_player);
-			min_eval = std::min(min_eval, eval);
-			alpha = std::min(beta, eval);
-
-			deleteChessboard(newChessboard);
-
-			if (beta <= alpha)
-			{
-				break;
-			}
-		}
-
-		return min_eval;
-	}
+	return max_eval;
 }
 
 AI_Field AI::FindBestMove(AI_Field** chessboard, int depth)
@@ -139,7 +115,7 @@ AI_Field AI::FindBestMove(AI_Field** chessboard, int depth)
 	for (AI_Field move : available_moves)
 	{
 		AI_Field** newChessboard = CheckMove(chessboard, move);
-		int eval = MiniMax(newChessboard, depth - 1, alpha, beta, false);
+		int eval = MiniMax(newChessboard, depth - 1, alpha, beta);
 		
 		if (eval > max_eval)
 		{

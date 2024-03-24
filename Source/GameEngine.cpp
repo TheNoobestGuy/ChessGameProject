@@ -9,8 +9,9 @@ int GameEngine::stage;
 bool GameEngine::initialize_stage;
 
 // Game Handler
-bool  GameEngine::reset_game;
-bool  GameEngine::end_game;
+int GameEngine::human_player = WHITE_FIGURES;
+bool GameEngine::reset_game;
+bool GameEngine::end_game;
 
 // Keyboard tracer
 bool GameEngine::key_down;

@@ -17,6 +17,21 @@
 #include "Constants.h"
 #include "TextureMenager.h"
 
+enum Players {
+	HUMAN = 0,
+	COMPUTER = 1
+};
+
+enum Colors {
+	WHITE = 0,
+	BLACK = 1
+};
+
+enum Figures {
+	WHITE_FIGURES = 0,
+	BLACK_FIGURES = 1
+};
+
 class GameEngine
 {
 	private:
@@ -36,6 +51,7 @@ class GameEngine
 		static bool initialize_stage;
 
 		// Game scene
+		static int human_player;
 		static bool reset_game;
 		static bool end_game;
 		

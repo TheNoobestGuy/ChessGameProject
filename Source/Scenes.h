@@ -69,6 +69,6 @@ void Chessboard_scene(Chessboard* chessboard)
 	chessboard->AIComponent();
 	chessboard->RenderFigures();
 	chessboard->UpdateFigures();
-	chessboard->SwitchTurns();
 	chessboard->EndGame();
+	chessboard->SwitchTurns();
 }

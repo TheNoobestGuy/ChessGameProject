@@ -7,18 +7,19 @@ class Pawn : public Figure
 	private:
 		Field_ID movement[2][2] =
 		{
-			// White pawn
+			// Player pawn
 			{ { 0, -1}, { 0, -2} },
 
+			// Computer pawn
 			{ { 0,  1}, { 0,  2} }
 		};
 
 		Field_ID attacks_list[3][2] =
 		{
-			// White pawn
+			// Player pawn
 			{ {-1, -1}, { 1, -1} },
 
-			// Black pawn
+			// Computer pawn
 			{ {-1,  1}, { 1,  1} },
 
 			// En passant
@@ -39,12 +40,12 @@ class Pawn : public Figure
 		{
 			for (int move = 0; move < 2; move++)
 			{
-				moves_list.push_back(movement[color][move]);
+				moves_list.push_back(movement[player][move]);
 			}
 
 			for (int attack = 0; attack < 2; attack++)
 			{
-				moves_list.push_back(attacks_list[color][attack]);
+				moves_list.push_back(attacks_list[player][attack]);
 			}
 
 			for (int en_passsant = 0; en_passsant < 2; en_passsant++)

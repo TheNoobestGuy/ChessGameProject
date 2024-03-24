@@ -53,11 +53,13 @@ int main(int argc, char* args[])
 				if (GameEngine::initialize_stage)
 				{
 					std::cout << "Main menu initialized!" << std::endl;
+
 					if (main_menu != nullptr)
 					{
 						delete main_menu;
 						main_menu = nullptr;
 					}
+
 					main_menu = new MainMenu();
 					GameEngine::mouse_left = false;
 					GameEngine::initialize_stage = false;
@@ -78,11 +80,22 @@ int main(int argc, char* args[])
 				if (GameEngine::initialize_stage)
 				{
 					std::cout << "Chessboard initialized!" << std::endl;
+
 					if (chessboard != nullptr)
 					{
 						delete chessboard;
 						chessboard = nullptr;
 					}
+
+					if (GameEngine::human_player == WHITE_FIGURES)
+					{
+						GameEngine::human_player = BLACK_FIGURES;
+					}
+					else
+					{
+						GameEngine::human_player = WHITE_FIGURES;
+					}
+
 					chessboard = new Chessboard(64);
 					GameEngine::mouse_left = false;
 					GameEngine::initialize_stage = false;

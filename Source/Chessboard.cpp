@@ -3,7 +3,20 @@
 Chessboard::Chessboard(int fields_size)
 {
 	// Properties
-	this->player = 0;
+	if (GameEngine::human_player == WHITE_FIGURES)
+	{
+		this->player_turn = true;
+		this->computer_turn = false;
+	}
+	else
+	{
+		this->player_turn = false;
+		this->computer_turn = true;
+	}
+	
+	this->first_turn = true;
+	this->end_game = false;
+	this->computer_moved = false;
 	this->fields_size = fields_size;
 
 	// Update
@@ -15,16 +28,15 @@ Chessboard::Chessboard(int fields_size)
 	this->make_move = false;
 	this->move_to = { 0, 0 };
 	this->update_board = true;
-	this->computer_move = false;
 
-	this->white_player_value[0] = 0;
-	this->white_player_value[1] = 0;
-	this->black_player_value[0] = 0;
-	this->black_player_value[1] = 0;
+	this->player_score[0] = 0;
+	this->player_score[1] = 0;
+	this->computer_score[0] = 0;
+	this->computer_score[1] = 0;
 
 	// Figures
-	this->white_king = nullptr;
-	this->black_king = nullptr;
+	this->player_king = nullptr;
+	this->computer_king = nullptr;
 	this->current_figure = nullptr;
 	this->last_collision = nullptr;
 	this->figure_to_remove = nullptr;
@@ -36,7 +48,7 @@ Chessboard::Chessboard(int fields_size)
 	// Computer
 	Computer = new AI(chessboard);
 
-	// Text test
+	// Text
 	white_won = { "White player won", {0, 0, 0}, GameEngine::CreateRectangle(SCREEN_WIDTH/2 - 150, SCREEN_HEIGHT/2 - 100, 300, 100)};
 	white_won.unselected = TextureMenager::LoadFont(white_won.text, white_won.color);
 
@@ -52,8 +64,8 @@ Chessboard::Chessboard(int fields_size)
 
 Chessboard::~Chessboard() 
 {
-	white_king = nullptr;
-	black_king = nullptr;
+	player_king = nullptr;
+	computer_king = nullptr;
 	current_figure = nullptr;
 	last_collision = nullptr;
 	figure_to_remove = nullptr;
@@ -69,12 +81,12 @@ Chessboard::~Chessboard()
 			chessboard[row][col] = nullptr;
 		}
 	}
-	for (Figure* figure : white_player)
+	for (Figure* figure : player_figures)
 	{
 		delete figure;
 		figure = nullptr;
 	}
-	for (Figure* figure : black_player)
+	for (Figure* figure : computer_figures)
 	{
 		delete figure;
 		figure = nullptr;
@@ -88,21 +100,21 @@ void Chessboard::CreateBoard()
 	for (int row = 0; row < 8; row++)
 	{
 		if (row % 2 == 0)
-			color = 0;
+			color = WHITE;
 		else
-			color = 1;
+			color = BLACK;
 
 		for (int col = 0; col < 8; col++)
 		{
-			if (color == 1)
+			if (color == BLACK)
 			{
 				chessboard[row][col] = new Field{ { col, row }, fields_size, color};
-				color = 0;
+				color = WHITE;
 			}
 			else
 			{
 				chessboard[row][col] = new Field { { col, row }, fields_size, color};
-				color = 1;
+				color = BLACK;
 			}
 		}
 	}
@@ -112,59 +124,73 @@ void Chessboard::CreateFigures()
 {
 	int ID = 1;
 
+	int player_row[2] = { 6, 7 };
+	int computer_row[2] = { 1, 0 };
+
+	int figures_colors[2] = { WHITE, BLACK };
+
+	if (GameEngine::human_player == BLACK_FIGURES)
+	{
+		figures_colors[0] = BLACK;
+		figures_colors[1] = WHITE;
+	}
+
 	// Pawns
 	std::string name = "Pawn";
 	for (int i = 0; i < 8; i++, ID++)
 	{
-		white_player.push_back(new Pawn(name, ID, chessboard[6][i]->field_ID, 0, 64, 1));
-		black_player.push_back(new Pawn(name, ID, chessboard[1][i]->field_ID, 1, 64, 1));
+		player_figures.push_back(new Pawn(name, ID, chessboard[player_row[0]][i]->field_ID, figures_colors[0], 64, 1));
+		computer_figures.push_back(new Pawn(name, ID, chessboard[computer_row[0]][i]->field_ID, figures_colors[1], 64, 1));
 	}
+
 
 	// Knights
 	name = "Knight";
-	for (int i = 1; i < 8; i+=5, ID++)
+	for (int i = 1; i < 8; i += 5, ID++)
 	{
-		white_player.push_back(new Knight(name, ID, chessboard[7][i]->field_ID, 0, 64, 3));
-		black_player.push_back(new Knight(name, ID, chessboard[0][i]->field_ID, 1, 64, 3));
+		player_figures.push_back(new Knight(name, ID, chessboard[player_row[1]][i]->field_ID, figures_colors[0], 64, 3));
+		computer_figures.push_back(new Knight(name, ID, chessboard[computer_row[1]][i]->field_ID, figures_colors[1], 64, 3));
 	}
 
 	// Bishops
 	name = "Bishop";
-	for (int i = 2; i < 8; i+=3, ID++)
+	for (int i = 2; i < 8; i += 3, ID++)
 	{
-		white_player.push_back(new Bishop(name, ID, chessboard[7][i]->field_ID, 0, 64, 3));
-		black_player.push_back(new Bishop(name, ID, chessboard[0][i]->field_ID, 1, 64, 3));
+		player_figures.push_back(new Bishop(name, ID, chessboard[player_row[1]][i]->field_ID, figures_colors[0], 64, 3));
+		computer_figures.push_back(new Bishop(name, ID, chessboard[computer_row[1]][i]->field_ID, figures_colors[1], 64, 3));
 	}
 
 	// Rooks
 	name = "Rook";
-	for (int i = 0; i < 8; i+=7, ID++)
+	for (int i = 0; i < 8; i += 7, ID++)
 	{
-		white_player.push_back(new Rook(name, ID, chessboard[7][i]->field_ID, 0, 64, 5));
-		black_player.push_back(new Rook(name, ID, chessboard[0][i]->field_ID, 1, 64, 5));
+		player_figures.push_back(new Rook(name, ID, chessboard[player_row[1]][i]->field_ID, figures_colors[0], 64, 5));
+		computer_figures.push_back(new Rook(name, ID, chessboard[computer_row[1]][i]->field_ID, figures_colors[1], 64, 5));
 	}
 
 	// Queens
 	name = "Queen";
-	white_player.push_back(new Queen(name, ID, chessboard[7][3]->field_ID, 0, 64, 9));
-	black_player.push_back(new Queen(name, ID, chessboard[0][3]->field_ID, 1, 64, 9));
+	player_figures.push_back(new Queen(name, ID, chessboard[player_row[1]][3]->field_ID, figures_colors[0], 64, 9));
+	computer_figures.push_back(new Queen(name, ID, chessboard[computer_row[1]][3]->field_ID, figures_colors[1], 64, 9));
 
 	// Kings
 	name = "King";
 	ID++;
-	white_player.push_back(new King(name, ID, chessboard[7][4]->field_ID, 0, 64, 0));
-	white_king = white_player.back();
+	player_figures.push_back(new King(name, ID, chessboard[player_row[1]][4]->field_ID, figures_colors[0], 64, 0));
+	player_king = player_figures.back();
 
-	black_player.push_back(new King(name, ID, chessboard[0][4]->field_ID, 1, 64, 0));
-	black_king = black_player.back();
+	computer_figures.push_back(new King(name, ID, chessboard[computer_row[1]][4]->field_ID, figures_colors[1], 64, 0));
+	computer_king = computer_figures.back();
 
-	// Append moves
-	for (Figure* figure : white_player)
+	// Append moves and set player type
+	for (Figure* figure : player_figures)
 	{
+		figure->SetPlayer(HUMAN);
 		figure->PossibleMoves();
 	}
-	for (Figure* figure : black_player)
+	for (Figure* figure : computer_figures)
 	{
+		figure->SetPlayer(COMPUTER);
 		figure->PossibleMoves();
 	}
 }
@@ -175,7 +201,7 @@ void Chessboard::DrawBoard()
 	{
 		for (int col = 0; col < 8; col++)
 		{
-			if (chessboard[row][col]->color == 1)
+			if (chessboard[row][col]->color == BLACK)
 				TextureMenager::Draw(fields_colors[1].texture, fields_colors[1].srcRect, chessboard[row][col]->field_rect);
 			else
 				TextureMenager::Draw(fields_colors[0].texture, fields_colors[0].srcRect, chessboard[row][col]->field_rect);
@@ -185,12 +211,12 @@ void Chessboard::DrawBoard()
 
 void Chessboard::DrawFigures()
 {
-	for (Figure* figure : white_player)
+	for (Figure* figure : player_figures)
 	{
 		figure->Render();
 	}
 
-	for (Figure* figure : black_player)
+	for (Figure* figure : computer_figures)
 	{
 		figure->Render();
 	}
@@ -200,8 +226,6 @@ void Chessboard::BoardUpdate()
 {
 	if (update_board)
 	{
-		if (player == 1)
-			computer_move = true;
 		checkmate = false;
 
 		// Evaluate value of board
@@ -217,36 +241,39 @@ void Chessboard::BoardUpdate()
 		AttachPositionsToBoard();
 
 		// Calculate available moves for figures
-		CalculateFigureMoves(white_player);
-		CalculateFigureMoves(black_player);
+		CalculateFigureMoves(player_figures);
+		CalculateFigureMoves(computer_figures);
 
 		// Mark fields under attack
-		MarkFieldsUnderAttack(white_player);
-		MarkFieldsUnderAttack(black_player);
+		MarkFieldsUnderAttack(player_figures);
+		MarkFieldsUnderAttack(computer_figures);
 
 		// Check for entangling
-		CheckForEntangling(white_player, black_king);
-		CheckForEntangling(black_player, white_king);
+		CheckForEntangling(player_figures, computer_king);
+		CheckForEntangling(computer_figures, player_king);
 
-		ApplyEntangledMoves(white_player);
-		ApplyEntangledMoves(black_player);
+		ApplyEntangledMoves(player_figures);
+		ApplyEntangledMoves(computer_figures);
 
 		// Kings mechanics
-		KingMechanic(white_player, black_player, white_king);
-		KingMechanic(black_player, white_player, black_king);
+		KingMechanic(player_figures, computer_figures, player_king);
+		KingMechanic(computer_figures, player_figures, computer_king);
 
 		// End game condition check
 		EndGameCondition();
 
 		update_board = false;
+
+		if ((no_moves[0] || no_moves[1]) && checkmate)
+			end_game = true;
 	}
 }
 
 void Chessboard::AIComponent()
 {
-	if (computer_move)
+	if (computer_turn && !end_game)
 	{
-		Computer->UpdateAI(chessboard, black_player);
+		Computer->UpdateAI(chessboard, computer_figures);
 
 		current_figure = Computer->MoveFigure();
 
@@ -260,6 +287,8 @@ void Chessboard::AIComponent()
 		}
 
 		make_move = true;
+		update_board = true;
+		computer_moved = true;
 	}
 }
 
@@ -267,80 +296,87 @@ void Chessboard::SwitchTurns()
 {
 	if (update_board)
 	{
-		switch (player)
+		if (player_turn)
 		{
-		case 0:
-			player = 1;
-			break;
-
-		case 1:
-			player = 0;
-			break;
+			player_turn = false;
+			computer_turn = true;
+			computer_moved = false;
+		}
+		else
+		{
+			player_turn = true;
+			computer_turn = false;
+			computer_moved = false;
 		}
 	}
 }
 
 void Chessboard::UpdateFigures()
 {
-	if (player == 0)
+	if (!end_game)
 	{
-		PickedUpFigure();
-
-		for (Figure* figure : white_player)
+		if (player_turn)
 		{
-			figure->PickUp(figure_picked_up);
+			PickedUpFigure();
+
+			for (Figure* figure : player_figures)
+			{
+				figure->PickUp(figure_picked_up);
+			}
+
+			PickedUpDestination();
 		}
 
-		PickedUpDestination();
+		MoveFigure();
 	}
-
-	MoveFigure();
 }
 
 void Chessboard::RenderFigures()
 {
-	SDL_RenderClear(GameEngine::renderer);
+	if (!end_game)
+	{
+		SDL_RenderClear(GameEngine::renderer);
 
-	DrawBoard();
+		DrawBoard();
 
-	DrawMarksForMovesWhenPicked(white_player);
-	DrawMarksForMovesWhenPicked(black_player);
+		DrawMarksForMovesWhenPicked();
 
-	DrawFigures();
+		DrawFigures();
 
-	// Render the picked up figure in front
-	if (current_figure != nullptr && !computer_move)
-		current_figure->Render();
+		// Render the picked up figure in front
+		if (player_turn && current_figure != nullptr)
+			current_figure->Render();
 
-	SDL_RenderPresent(GameEngine::renderer);
+		SDL_RenderPresent(GameEngine::renderer);
+	}
 }
 
 void Chessboard::EvaluateBoardValue()
 {
-	white_player_value[0] = 0;
-	black_player_value[0] = 0;
+	player_score[0] = 0;
+	computer_score[0] = 0;
 
-	for (Figure* figure : white_player)
+	for (Figure* figure : player_figures)
 	{
-		white_player_value[0] += figure->GetValue();
+		player_score[0] += figure->GetValue();
 	}
 
-	for (Figure* figure : black_player)
+	for (Figure* figure : computer_figures)
 	{
-		black_player_value[0] += figure->GetValue();
+		computer_score[0] += figure->GetValue();
 	}
 
 	if (figure_to_remove != nullptr)
 	{
 		if (figure_to_remove->GetPlayer() == 0)
 		{
-			white_player_value[1] += figure_to_remove->GetValue();
-			white_player_value[0] -= figure_to_remove->GetValue();
+			player_score[1] += figure_to_remove->GetValue();
+			player_score[0] -= figure_to_remove->GetValue();
 		}
 		else if (figure_to_remove->GetPlayer() == 1)
 		{
-			black_player_value[1] += figure_to_remove->GetValue();
-			black_player_value[0] -= figure_to_remove->GetValue();
+			computer_score[1] += figure_to_remove->GetValue();
+			computer_score[0] -= figure_to_remove->GetValue();
 		}
 	}
 }
@@ -349,30 +385,30 @@ void Chessboard::RemoveFromBoard()
 {
 	if (figure_to_remove != nullptr)
 	{
-		if (figure_to_remove->GetPlayer() == 0)
+		if (figure_to_remove->GetPlayer() == HUMAN)
 		{
-			for (int figure = 0; figure < white_player.size(); figure++)
+			for (int figure = 0; figure < player_figures.size(); figure++)
 			{
-				if (white_player[figure]->GetID() == figure_to_remove->GetID())
+				if (player_figures[figure]->GetID() == figure_to_remove->GetID())
 				{
-					delete white_player[figure];
-					white_player[figure] = nullptr;
-					white_player.erase(white_player.begin() + figure);
+					delete player_figures[figure];
+					player_figures[figure] = nullptr;
+					player_figures.erase(player_figures.begin() + figure);
 
 					figure_to_remove = nullptr;
 					break;
 				}
 			}
 		}
-		else if (figure_to_remove->GetPlayer() == 1)
+		else
 		{
-			for (int figure = 0; figure < black_player.size(); figure++)
+			for (int figure = 0; figure < computer_figures.size(); figure++)
 			{
-				if (black_player[figure]->GetID() == figure_to_remove->GetID())
+				if (computer_figures[figure]->GetID() == figure_to_remove->GetID())
 				{
-					delete black_player[figure];
-					black_player[figure] = nullptr;
-					black_player.erase(black_player.begin() + figure);
+					delete computer_figures[figure];
+					computer_figures[figure] = nullptr;
+					computer_figures.erase(computer_figures.begin() + figure);
 
 					figure_to_remove = nullptr;
 					break;
@@ -384,34 +420,41 @@ void Chessboard::RemoveFromBoard()
 
 void Chessboard::HasBecomeQueen()
 {
-	for (int figure = 0; figure < white_player.size(); figure++)
+	int QueenBecomeField[2] = {0, 7};
+
+	for (int figure = 0; figure < player_figures.size(); figure++)
 	{
-		if (white_player[figure]->GetName() == "Pawn" && white_player[figure]->GetField().y == 0)
+		if (player_figures[figure]->GetName() == "Pawn" && player_figures[figure]->GetField().y == QueenBecomeField[0])
 		{
-			int tempID = white_player[figure]->GetID();
-			Field_ID tempField = white_player[figure]->GetField();
+			int tempID = player_figures[figure]->GetID();
+			int tempColor = player_figures[figure]->GetColor();
+			Field_ID tempField = player_figures[figure]->GetField();
 
-			delete white_player[figure];
-			white_player[figure] = nullptr;
-			white_player.erase(white_player.begin() + figure);
+			delete player_figures[figure];
+			player_figures[figure] = nullptr;
+			player_figures.erase(player_figures.begin() + figure);
 
-			white_player.push_back(new Queen("Queen", tempID, tempField, 0, 64, 9));
-			white_player.back()->PossibleMoves();
+			player_figures.push_back(new Queen("Queen", tempID, tempField, tempColor, 64, 9));
+			player_figures.back()->SetPlayer(HUMAN);
+			player_figures.back()->PossibleMoves();
 		}
 	}
-	for (int figure = 0; figure < black_player.size(); figure++)
+
+	for (int figure = 0; figure < computer_figures.size(); figure++)
 	{
-		if (black_player[figure]->GetName() == "Pawn" && black_player[figure]->GetField().y == 7)
+		if (computer_figures[figure]->GetName() == "Pawn" && computer_figures[figure]->GetField().y == QueenBecomeField[1])
 		{
-			int tempID = black_player[figure]->GetID();
-			Field_ID tempField = black_player[figure]->GetField();
+			int tempID = computer_figures[figure]->GetID();
+			int tempColor = computer_figures[figure]->GetColor();
+			Field_ID tempField = computer_figures[figure]->GetField();
 
-			delete black_player[figure];
-			black_player[figure] = nullptr;
-			black_player.erase(black_player.begin() + figure);
+			delete computer_figures[figure];
+			computer_figures[figure] = nullptr;
+			computer_figures.erase(computer_figures.begin() + figure);
 
-			black_player.push_back(new Queen("Queen", tempID, tempField, 1, 64, 9));
-			black_player.back()->PossibleMoves();
+			computer_figures.push_back(new Queen("Queen", tempID, tempField, tempColor, 64, 9));
+			computer_figures.back()->SetPlayer(COMPUTER);
+			computer_figures.back()->PossibleMoves();
 		}
 	}
 }
@@ -424,7 +467,7 @@ void Chessboard::AttachPositionsToBoard()
 		{
 			bool appended_figure = false;
 
-			for (Figure* figure : white_player)
+			for (Figure* figure : player_figures)
 			{
 				if (row == figure->GetField().y && col == figure->GetField().x)
 				{
@@ -437,7 +480,7 @@ void Chessboard::AttachPositionsToBoard()
 
 			if (!appended_figure)
 			{
-				for (Figure* figure : black_player)
+				for (Figure* figure : computer_figures)
 				{
 					if (row == figure->GetField().y && col == figure->GetField().x)
 					{
@@ -463,11 +506,10 @@ void Chessboard::AttachPositionsToBoard()
 
 void Chessboard::KingMechanic(std::vector<Figure*>& player_figures, std::vector<Figure*>& opposite_player_figures, Figure* king)
 {
-	// Deduce opposite player
-	int opposite_player = 1;
+	int opposite_player = COMPUTER;
 
-	if (king->GetPlayer() == 1)
-		opposite_player = 0;
+	if (king->GetPlayer() == COMPUTER)
+		opposite_player = HUMAN;
 
 	// Remove unavailable moves from king pool of moves
 	std::vector<Field_ID> buffor;
@@ -647,7 +689,7 @@ void Chessboard::EndGameCondition()
 	no_moves[0] = true;
 	no_moves[1] = true;
 
-	for (Figure* figure : white_player)
+	for (Figure* figure : player_figures)
 	{
 		if (!figure->available_moves.empty())
 		{
@@ -656,7 +698,7 @@ void Chessboard::EndGameCondition()
 		}
 	}
 
-	for (Figure* figure : black_player)
+	for (Figure* figure : computer_figures)
 	{
 		if (!figure->available_moves.empty())
 		{
@@ -668,104 +710,107 @@ void Chessboard::EndGameCondition()
 
 void Chessboard::EndGame()
 {
-	// Win by checkmate
-	if ((no_moves[0] || no_moves[1]) && checkmate)
+	if ((update_board || end_game) && !computer_moved)
 	{
-		update_board = false;
-		end_screen = true;
-
-		while (end_screen)
+		// Win by checkmate
+		if ((no_moves[0] || no_moves[1]) && checkmate)
 		{
-			SDL_RenderClear(GameEngine::renderer);
+			update_board = false;
+			end_screen = true;
 
-			DrawBoard();
-			DrawFigures();
-
-			if (player == 0)
+			while (end_screen)
 			{
-				TextureMenager::Draw(black_won.unselected, black_won.rect);
+				SDL_RenderClear(GameEngine::renderer);
+
+				DrawBoard();
+				DrawFigures();
+
+				if ((computer_turn && GameEngine::human_player == WHITE_FIGURES) || (player_turn && GameEngine::human_player == BLACK_FIGURES))
+				{
+					TextureMenager::Draw(white_won.unselected, white_won.rect);
+				}
+				else
+				{
+					TextureMenager::Draw(black_won.unselected, black_won.rect);
+				}
+
+				TextureMenager::Draw(reset.unselected, reset.rect);
+
+				SDL_RenderPresent(GameEngine::renderer);
+
+				SDL_Event event;
+				SDL_PollEvent(&event);
+
+				switch (event.type)
+				{
+				case SDL_QUIT:
+					end_screen = false;
+					GameEngine::isRunning = false;
+					break;
+
+				case SDL_KEYDOWN:
+					GameEngine::end_game = true;
+					end_screen = false;
+					break;
+
+				case SDL_MOUSEBUTTONDOWN:
+					GameEngine::reset_game = true;
+					end_screen = false;
+					break;
+
+				default:
+					break;
+				}
 			}
-			else
-			{
-				TextureMenager::Draw(white_won.unselected, white_won.rect);
-			}
 
-			TextureMenager::Draw(reset.unselected, reset.rect);
-
-			SDL_RenderPresent(GameEngine::renderer);
-
-			SDL_Event event;
-			SDL_PollEvent(&event);
-
-			switch (event.type)
-			{
-			case SDL_QUIT:
-				end_screen = false;
-				GameEngine::isRunning = false;
-				break;
-
-			case SDL_KEYDOWN:
-				GameEngine::end_game = true;
-				end_screen = false;
-				break;
-
-			case SDL_MOUSEBUTTONDOWN:
-				GameEngine::reset_game = true;
-				end_screen = false;
-				break;
-
-			default:
-				break;
-			}
+			GameEngine::mouse_left = false;
 		}
-
-		GameEngine::mouse_left = false;
-	}
-	// Pat
-	else if (no_moves[0] || no_moves[1])
-	{
-		update_board = false;
-		end_screen = true;
-
-		while (end_screen)
+		// Pat
+		else if ((no_moves[0] || no_moves[1]))
 		{
-			SDL_RenderClear(GameEngine::renderer);
+			update_board = false;
+			end_screen = true;
 
-			DrawBoard();
-			DrawFigures();
-
-			TextureMenager::Draw(pat.unselected, pat.rect);
-
-			TextureMenager::Draw(reset.unselected, reset.rect);
-
-			SDL_RenderPresent(GameEngine::renderer);
-
-			SDL_Event event;
-			SDL_PollEvent(&event);
-
-			switch (event.type)
+			while (end_screen)
 			{
-			case SDL_QUIT:
-				end_screen = false;
-				GameEngine::isRunning = false;
-				break;
+				SDL_RenderClear(GameEngine::renderer);
 
-			case SDL_KEYDOWN:
-				GameEngine::end_game = true;
-				end_screen = false;
-				break;
+				DrawBoard();
+				DrawFigures();
 
-			case SDL_MOUSEBUTTONDOWN:
-				GameEngine::reset_game = true;
-				end_screen = false;
-				break;
+				TextureMenager::Draw(pat.unselected, pat.rect);
 
-			default:
-				break;
+				TextureMenager::Draw(reset.unselected, reset.rect);
+
+				SDL_RenderPresent(GameEngine::renderer);
+
+				SDL_Event event;
+				SDL_PollEvent(&event);
+
+				switch (event.type)
+				{
+				case SDL_QUIT:
+					end_screen = false;
+					GameEngine::isRunning = false;
+					break;
+
+				case SDL_KEYDOWN:
+					GameEngine::end_game = true;
+					end_screen = false;
+					break;
+
+				case SDL_MOUSEBUTTONDOWN:
+					GameEngine::reset_game = true;
+					end_screen = false;
+					break;
+
+				default:
+					break;
+				}
 			}
-		}
 
-		GameEngine::mouse_left = false;
+			GameEngine::mouse_left = false;
+		}
 	}
 
 	if (GameEngine::end_game)
@@ -784,7 +829,7 @@ void Chessboard::MarkFieldsUnderAttack(std::vector<Figure*>& player_figures)
 {
 	for (Figure* figure : player_figures)
 	{
-		int player_pos = figure->GetPlayer();
+		int player = figure->GetPlayer();
 
 		if (figure->GetName() == "Pawn")
 		{
@@ -793,11 +838,11 @@ void Chessboard::MarkFieldsUnderAttack(std::vector<Figure*>& player_figures)
 			int pos_x_2 = figure->GetField().x + 1;
 			int pos_y = figure->GetField().y;
 
-			if (player_pos == 0)
+			if (player == HUMAN)
 			{
 				pos_y--;
 			}
-			else if (player_pos == 1)
+			else if (player == COMPUTER)
 			{
 				pos_y++;
 			}
@@ -806,11 +851,11 @@ void Chessboard::MarkFieldsUnderAttack(std::vector<Figure*>& player_figures)
 			{
 				if (pos_x_1 >= 0 && pos_x_1 < 8)
 				{
-					chessboard[pos_y][pos_x_1]->field_under_attack[player_pos] = true;
+					chessboard[pos_y][pos_x_1]->field_under_attack[player] = true;
 				}
 				if (pos_x_2 >= 0 && pos_x_2 < 8)
 				{
-					chessboard[pos_y][pos_x_2]->field_under_attack[player_pos] = true;
+					chessboard[pos_y][pos_x_2]->field_under_attack[player] = true;
 				}
 			}
 		}
@@ -819,7 +864,7 @@ void Chessboard::MarkFieldsUnderAttack(std::vector<Figure*>& player_figures)
 			// Every possible moves of those figures are also attacks
 			for (Field_ID attack : figure->available_moves)
 			{
-				chessboard[attack.y][attack.x]->field_under_attack[player_pos] = true;
+				chessboard[attack.y][attack.x]->field_under_attack[player] = true;
 			}
 		}
 		else if (figure->GetName() == "Bishop" || figure->GetName() == "Rook" || figure->GetName() == "Queen")
@@ -848,11 +893,11 @@ void Chessboard::MarkFieldsUnderAttack(std::vector<Figure*>& player_figures)
 						figure_encountered = true;
 					}
 
-					chessboard[attack.y][attack.x]->field_under_attack[player_pos] = true;
+					chessboard[attack.y][attack.x]->field_under_attack[player] = true;
 				}
 				else
 				{
-					chessboard[attack.y][attack.x]->field_under_attack[player_pos] = true;
+					chessboard[attack.y][attack.x]->field_under_attack[player] = true;
 				}
 			}
 		}
@@ -882,6 +927,10 @@ void Chessboard::CalculateFigureMoves(std::vector<Figure*>& player_figures)
 						if (chessboard[move_y][move_x]->figure->GetPlayer() != figure->GetPlayer())
 						{
 							figure->available_moves.push_back({ move_x, move_y });
+						}
+						else
+						{
+							chessboard[move_y][move_x]->field_under_attack[figure->GetPlayer()] = true;
 						}
 					}
 					else
@@ -937,7 +986,7 @@ void Chessboard::CalculateFigureMoves(std::vector<Figure*>& player_figures)
 								}
 							}
 							// If friendly figure encountered append its position as last attack in axis
-							else if (chessboard[move_y][move_x]->figure->GetPlayer() == figure->GetPlayer())
+							else
 							{
 								chessboard[move_y][move_x]->field_under_attack[figure->GetPlayer()] = true;
 								next_axis = true;
@@ -1001,7 +1050,7 @@ void Chessboard::CalculateFigureMoves(std::vector<Figure*>& player_figures)
 								figure->way_to_opposite_king.push_back({ move_x, move_y });
 							}
 						}
-						else if (chessboard[move_y][move_x]->figure->GetPlayer() == figure->GetPlayer())
+						else
 						{
 							chessboard[move_y][move_x]->field_under_attack[figure->GetPlayer()] = true;
 						}
@@ -1100,7 +1149,7 @@ void Chessboard::PickedUpFigure()
 {
 	current_figure = nullptr;
 
-	for (Figure* figure : white_player)
+	for (Figure* figure : player_figures)
 	{
 		if (figure->PickedUp())
 		{
@@ -1108,19 +1157,9 @@ void Chessboard::PickedUpFigure()
 			break;
 		}
 	}
-
-	for (Figure* figure : black_player)
-	{
-		if (figure->PickedUp())
-		{
-			current_figure = figure;
-			break;
-		}
-	}
-
 }
 
-void Chessboard::DrawMarksForMovesWhenPicked(std::vector<Figure*>& player_figures)
+void Chessboard::DrawMarksForMovesWhenPicked()
 {
 	for (Figure* figure : player_figures)
 	{
@@ -1136,24 +1175,12 @@ void Chessboard::DrawMarksForMovesWhenPicked(std::vector<Figure*>& player_figure
 				if (field.available_move)
 				{
 					bool attack = false;
-					if (figure->GetPlayer() == 0)
+
+					for (Figure* figure : computer_figures)
 					{
-						for (Figure* figure : black_player)
+						if (field == figure->GetField())
 						{
-							if (field == figure->GetField())
-							{
-								attack = true;
-							}
-						}
-					}
-					else
-					{
-						for (Figure* figure : white_player)
-						{
-							if (field == figure->GetField())
-							{
-								attack = true;
-							}
+							attack = true;
 						}
 					}
 
@@ -1218,15 +1245,21 @@ void Chessboard::MoveFigure()
 {
 	if (current_figure != nullptr)
 	{
+		if (first_turn && computer_turn)
+		{
+			std::this_thread::sleep_for(std::chrono::milliseconds(400));
+			first_turn = false;
+		}
+
 		// Send new field ID to figure and check if there is any collision with some other figures
 		if (make_move && !current_figure->PickedUp())
 		{
 			// Attack			
 			if (move_to.attacked_figure != nullptr && move_to.attacked_figure->GetPlayer() != current_figure->GetPlayer())
 			{
-				if (player == 0)
+				if (current_figure->GetPlayer() == HUMAN)
 				{
-					for (Figure* figure : black_player)
+					for (Figure* figure : computer_figures)
 					{
 						if (figure->GetID() == move_to.attacked_figure->GetID())
 						{
@@ -1235,9 +1268,9 @@ void Chessboard::MoveFigure()
 						}
 					}
 				}
-				else if (player == 1)
+				else
 				{
-					for (Figure* figure : white_player)
+					for (Figure* figure : player_figures)
 					{
 						if (figure->GetID() == move_to.attacked_figure->GetID())
 						{
@@ -1252,11 +1285,11 @@ void Chessboard::MoveFigure()
 			{
 				if (move_to.attacked_figure == nullptr && chessboard[move_to.y][move_to.x]->en_passant == true)
 				{
-					if (player == 0)
+					if (current_figure->GetPlayer() == COMPUTER)
 					{
 						figure_to_remove = chessboard[move_to.y + 1][move_to.x]->figure;
 					}
-					else if (player == 1)
+					else
 					{
 						figure_to_remove = chessboard[move_to.y - 1][move_to.x]->figure;
 					}
@@ -1276,11 +1309,12 @@ void Chessboard::MoveFigure()
 			make_move = false;
 			current_figure = nullptr;
 			move_to.attacked_figure = nullptr;
+			first_turn = false;
 
-			if (computer_move)
+			if (computer_turn)
 			{
 				std::this_thread::sleep_for(std::chrono::milliseconds(400));
-				computer_move = false;
+				computer_turn = false;
 			}
 		}
 	}

@@ -26,11 +26,14 @@ class Chessboard
 {
 	private:
 		// Properties
-		int player;
+		bool player_turn;
+		bool computer_turn;
+		bool computer_moved;
+		bool first_turn;
+		bool end_game;
 		int fields_size;
-		bool computer_move;
-		int white_player_value[2];
-		int black_player_value[2];
+		int player_score[2];
+		int computer_score[2];
 
 		// Computer
 		AI* Computer;
@@ -48,13 +51,13 @@ class Chessboard
 		Field* chessboard[8][8];
 
 		// Figures
-		Figure* white_king;
-		Figure* black_king;
+		Figure* player_king;
+		Figure* computer_king;
 		Figure* current_figure;
 		Figure* figure_to_remove;
 		SDL_Rect* last_collision;
-		std::vector<Figure*> white_player;
-		std::vector<Figure*> black_player;
+		std::vector<Figure*> player_figures;
+		std::vector<Figure*> computer_figures;
 		
 		// End game
 		Text white_won, black_won, pat, reset;
@@ -79,7 +82,7 @@ class Chessboard
 		void ApplyEntangledMoves(std::vector<Figure*>& player_figures);
 		void EndGameCondition();
 		void PickedUpFigure();
-		void DrawMarksForMovesWhenPicked(std::vector<Figure*>& player_figures);
+		void DrawMarksForMovesWhenPicked();
 		void PickedUpDestination();
 		void MoveFigure();
 
@@ -96,13 +99,13 @@ class Chessboard
 		void EndGame();
 
 		// Properties
-		int GetWhiteFiguresValue() { return white_player_value[0]; }
-		int GetWhiteConqueredValue() { return white_player_value[1]; }
-		int GetBlackFiguresValue() { return black_player_value[0]; }
-		int GetBlackConqueredValue() { return black_player_value[1]; }
+		int GetWhiteFiguresValue() { return player_score[0]; }
+		int GetWhiteConqueredValue() { return player_score[1]; }
+		int GetBlackFiguresValue() { return computer_score[0]; }
+		int GetBlackConqueredValue() { return computer_score[1]; }
 
-		std::vector<Figure*>& GetWhitePlayer() { return white_player;  }
-		std::vector<Figure*>& GetBlackPlayer() { return black_player;  }
+		std::vector<Figure*>& GetWhitePlayer() { return player_figures;  }
+		std::vector<Figure*>& GetBlackPlayer() { return computer_figures;  }
 
 	private:
 		Texture fields_colors[2] =
