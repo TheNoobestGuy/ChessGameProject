@@ -13,7 +13,7 @@ Chessboard::Chessboard(int fields_size)
 		this->player_turn = false;
 		this->computer_turn = true;
 	}
-	
+
 	this->first_turn = true;
 	this->end_game = false;
 	this->computer_moved = false;
@@ -49,20 +49,20 @@ Chessboard::Chessboard(int fields_size)
 	Computer = new AI(chessboard);
 
 	// Text
-	white_won = { "White player won", {0, 0, 0}, GameEngine::CreateRectangle(SCREEN_WIDTH/2 - 150, SCREEN_HEIGHT/2 - 100, 300, 100)};
+	white_won = { "White player won", {0, 0, 0}, GameEngine::CreateRectangle(SCREEN_WIDTH / 2 - 150, SCREEN_HEIGHT / 2 - 100, 300, 100) };
 	white_won.unselected = TextureMenager::LoadFont(white_won.text, white_won.color);
 
-	black_won = { "Black player won", {0, 0, 0}, GameEngine::CreateRectangle(SCREEN_WIDTH/2 - 150, SCREEN_HEIGHT/2 - 100, 300, 100) };
+	black_won = { "Black player won", {0, 0, 0}, GameEngine::CreateRectangle(SCREEN_WIDTH / 2 - 150, SCREEN_HEIGHT / 2 - 100, 300, 100) };
 	black_won.unselected = TextureMenager::LoadFont(black_won.text, black_won.color);
 
-	pat = { "Pat", {0, 0, 0}, GameEngine::CreateRectangle(SCREEN_WIDTH/2 - 150, SCREEN_HEIGHT/2 - 100, 300, 100) };
+	pat = { "Pat", {0, 0, 0}, GameEngine::CreateRectangle(SCREEN_WIDTH / 2 - 150, SCREEN_HEIGHT / 2 - 100, 300, 100) };
 	pat.unselected = TextureMenager::LoadFont(pat.text, pat.color);
 
-	reset = { "Press any key to go back to main menu or mouse to reset game", {0, 0, 0}, GameEngine::CreateRectangle(SCREEN_WIDTH/2 - 250, SCREEN_HEIGHT/2, 500, 50) };
+	reset = { "Press any key to go back to main menu or mouse to reset game", {0, 0, 0}, GameEngine::CreateRectangle(SCREEN_WIDTH / 2 - 250, SCREEN_HEIGHT / 2, 500, 50) };
 	reset.unselected = TextureMenager::LoadFont(reset.text, reset.color);
 }
 
-Chessboard::~Chessboard() 
+Chessboard::~Chessboard()
 {
 	player_king = nullptr;
 	computer_king = nullptr;
@@ -108,12 +108,12 @@ void Chessboard::CreateBoard()
 		{
 			if (color == BLACK)
 			{
-				chessboard[row][col] = new Field{ { col, row }, fields_size, color};
+				chessboard[row][col] = new Field{ { col, row }, fields_size, color };
 				color = WHITE;
 			}
 			else
 			{
-				chessboard[row][col] = new Field { { col, row }, fields_size, color};
+				chessboard[row][col] = new Field{ { col, row }, fields_size, color };
 				color = BLACK;
 			}
 		}
@@ -420,7 +420,7 @@ void Chessboard::RemoveFromBoard()
 
 void Chessboard::HasBecomeQueen()
 {
-	int QueenBecomeField[2] = {0, 7};
+	int QueenBecomeField[2] = { 0, 7 };
 
 	for (int figure = 0; figure < player_figures.size(); figure++)
 	{
@@ -743,23 +743,23 @@ void Chessboard::EndGame()
 
 				switch (event.type)
 				{
-				case SDL_QUIT:
-					end_screen = false;
-					GameEngine::isRunning = false;
-					break;
+					case SDL_QUIT:
+						end_screen = false;
+						GameEngine::isRunning = false;
+						break;
 
-				case SDL_KEYDOWN:
-					GameEngine::end_game = true;
-					end_screen = false;
-					break;
+					case SDL_KEYDOWN:
+						GameEngine::end_game = true;
+						end_screen = false;
+						break;
 
-				case SDL_MOUSEBUTTONDOWN:
-					GameEngine::reset_game = true;
-					end_screen = false;
-					break;
+					case SDL_MOUSEBUTTONDOWN:
+						GameEngine::reset_game = true;
+						end_screen = false;
+						break;
 
-				default:
-					break;
+					default:
+						break;
 				}
 			}
 
@@ -789,23 +789,23 @@ void Chessboard::EndGame()
 
 				switch (event.type)
 				{
-				case SDL_QUIT:
-					end_screen = false;
-					GameEngine::isRunning = false;
-					break;
+					case SDL_QUIT:
+						end_screen = false;
+						GameEngine::isRunning = false;
+						break;
 
-				case SDL_KEYDOWN:
-					GameEngine::end_game = true;
-					end_screen = false;
-					break;
+					case SDL_KEYDOWN:
+						GameEngine::end_game = true;
+						end_screen = false;
+						break;
 
-				case SDL_MOUSEBUTTONDOWN:
-					GameEngine::reset_game = true;
-					end_screen = false;
-					break;
+					case SDL_MOUSEBUTTONDOWN:
+						GameEngine::reset_game = true;
+						end_screen = false;
+						break;
 
-				default:
-					break;
+					default:
+						break;
 				}
 			}
 
@@ -892,13 +892,9 @@ void Chessboard::MarkFieldsUnderAttack(std::vector<Figure*>& player_figures)
 					{
 						figure_encountered = true;
 					}
+				}
 
-					chessboard[attack.y][attack.x]->field_under_attack[player] = true;
-				}
-				else
-				{
-					chessboard[attack.y][attack.x]->field_under_attack[player] = true;
-				}
+				chessboard[attack.y][attack.x]->field_under_attack[player] = true;
 			}
 		}
 	}
@@ -927,10 +923,6 @@ void Chessboard::CalculateFigureMoves(std::vector<Figure*>& player_figures)
 						if (chessboard[move_y][move_x]->figure->GetPlayer() != figure->GetPlayer())
 						{
 							figure->available_moves.push_back({ move_x, move_y });
-						}
-						else
-						{
-							chessboard[move_y][move_x]->field_under_attack[figure->GetPlayer()] = true;
 						}
 					}
 					else
@@ -988,12 +980,11 @@ void Chessboard::CalculateFigureMoves(std::vector<Figure*>& player_figures)
 							// If friendly figure encountered append its position as last attack in axis
 							else
 							{
-								chessboard[move_y][move_x]->field_under_attack[figure->GetPlayer()] = true;
 								next_axis = true;
 							}
 						}
 						else
-						{	
+						{
 							if (unavailable_moves)
 							{
 								figure->available_moves.push_back({ move_x, move_y });
@@ -1050,10 +1041,6 @@ void Chessboard::CalculateFigureMoves(std::vector<Figure*>& player_figures)
 								figure->way_to_opposite_king.push_back({ move_x, move_y });
 							}
 						}
-						else
-						{
-							chessboard[move_y][move_x]->field_under_attack[figure->GetPlayer()] = true;
-						}
 					}
 					else
 					{
@@ -1107,10 +1094,6 @@ void Chessboard::CalculateFigureMoves(std::vector<Figure*>& player_figures)
 							figure->way_to_opposite_king.push_back(figure->GetField());
 							figure->way_to_opposite_king.push_back({ attack_x, attack_y });
 						}
-					}
-					else if (chessboard[attack_y][attack_x]->figure != nullptr && chessboard[attack_y][attack_x]->figure->GetPlayer() == figure->GetPlayer())
-					{
-						chessboard[attack_y][attack_x]->field_under_attack[figure->GetPlayer()] = true;
 					}
 				}
 			}

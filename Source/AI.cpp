@@ -17,7 +17,7 @@ AI::AI(Field* chessboard[][8])
 	}
 }
 
-AI::~AI() 
+AI::~AI()
 {
 	deleteChessboard(converted_chessboard);
 }
@@ -30,7 +30,7 @@ void AI::UpdateAI(Field* chessboard[][8], std::vector<Figure*>& computer_figures
 	{
 		ConvertBoard(chessboard);
 
-		best_move = FindBestMove(converted_chessboard, 2);
+		best_move = FindBestMove(converted_chessboard, 1);
 	}
 	else
 	{
@@ -79,29 +79,14 @@ int AI::EvaluateBoard(AI_Field** chessboard)
 	return value;
 }
 
-int AI::MiniMax(AI_Field** chessboard, int depth, int alpha, int beta)
+int AI::MiniMax(AI_Field** chessboard, int depth)
 {
 	if (depth == 0)
 		return EvaluateBoard(chessboard);
 
-	int max_eval = INT_MIN;
+	int eval = MiniMax(chessboard, depth - 1);
 
-	for (AI_Field move : available_moves)
-	{
-		AI_Field** newChessboard = CheckMove(chessboard, move);
-		int eval = MiniMax(newChessboard, depth - 1, alpha, beta);
-		max_eval = std::max(max_eval, eval);
-		alpha = std::max(alpha, eval);
-
-		deleteChessboard(newChessboard);
-
-		if (beta <= alpha)
-		{
-			break;
-		}
-	}
-
-	return max_eval;
+	return eval;
 }
 
 AI_Field AI::FindBestMove(AI_Field** chessboard, int depth)
@@ -109,13 +94,11 @@ AI_Field AI::FindBestMove(AI_Field** chessboard, int depth)
 	AI_Field best_move;
 
 	int max_eval = INT_MIN;
-	int alpha = INT_MIN;
-	int beta = INT_MAX;
 
 	for (AI_Field move : available_moves)
 	{
 		AI_Field** newChessboard = CheckMove(chessboard, move);
-		int eval = MiniMax(newChessboard, depth - 1, alpha, beta);
+		int eval = MiniMax(newChessboard, depth - 1);
 		
 		if (eval > max_eval)
 		{
