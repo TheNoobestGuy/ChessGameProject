@@ -39,7 +39,6 @@ class AI
 	private:
 		std::vector<AI_Field> available_moves;
 		AI_Field** converted_chessboard;
-		AI_Field** boards[2];
 		AI_Field best_move;
 
 		// AI features
@@ -48,7 +47,7 @@ class AI
 
 		// Minimax algorithm with alpha-beta pruning
 		int EvaluateBoard(AI_Field** chessboard);
-		int MiniMax(AI_Field** chessboard, int depth);
+		int MiniMax(AI_Field** chessboard, int depth, int alpha, int beta);
 
 		AI_Field FindBestMove(AI_Field** chessboard, int depth);
 		AI_Field** CheckMove(AI_Field** chessboard, AI_Field& move);
