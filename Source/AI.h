@@ -2,6 +2,14 @@
 
 #include "Figure.h"
 
+// Figures
+#include "Pawn.h"
+#include "Knight.h"
+#include "Bishop.h"
+#include "Rook.h"
+#include "Queen.h"
+#include "King.h"
+
 struct Field
 {
 	// Field proporties
@@ -23,6 +31,18 @@ struct Field
 	}
 };
 
+struct FigureMove
+{
+	int x = 0;
+	int y = 0;
+	Figure* attacked_figure = nullptr;
+
+	~FigureMove()
+	{
+		attacked_figure = nullptr;
+	}
+};
+
 struct AI_Field
 {
 	Field_ID field_ID;
@@ -37,29 +57,40 @@ struct AI_Field
 class AI
 {
 	private:
-		std::vector<AI_Field> available_moves;
-		AI_Field** converted_chessboard;
-		AI_Field best_move;
+		// TEST
+		std::vector<std::tuple<int, Field>> moves_values;
 
-		// AI features
-		void AttachAvailableMoves(std::vector<Figure*>& computer_figures);
-		void ConvertBoard(Field* chessboard[][8]);
+		int players_values[2];
 
-		// Minimax algorithm with alpha-beta pruning
-		int EvaluateBoard(AI_Field** chessboard);
-		int MiniMax(AI_Field** chessboard, int depth, int alpha, int beta);
+		Field best_move;
 
-		AI_Field FindBestMove(AI_Field** chessboard, int depth);
-		AI_Field** CheckMove(AI_Field** chessboard, AI_Field& move);
+		// Evaluating moves algorithm
+		int EvaluateBoard(Field* chessboard[][8], Field& move, bool computer_turn);
+		int EvaluatingMovesAlgorithm(Field* chessboard[][8], Field move, std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Figure* player_king, Figure* computer_king, Figure* figure_to_remove, bool& computer_turn, bool checkmate, int value, int depth);
 
-		void deleteChessboard(AI_Field** chessboard);
+		void CheckMove(Field* chessboard[][8], Field* newChessboard[][8], Field& move);
+		Field FindBestMove(Field* chessboard[][8], std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Figure* player_king, Figure* computer_king, Figure* figure_to_remove, int depth);
+
+		void deleteChessboard(Field* chessboard[][8]);
+
+		// Board update features
+		void RemoveFromBoard(Figure* figure_to_remove, std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures);
+		void HasBecomeQueen(std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures);
+		void AttachPositionsToBoard(Field* chessboard[][8], std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures);
+		void CalculateFigureMoves(Field* chessboard[][8], std::vector<Figure*>& player_figures);
+		void MarkFieldsUnderAttack(Field* chessboard[][8], std::vector<Figure*>& player_figures);
+		void CheckForEntangling(Field* chessboard[][8], std::vector<Figure*>& player_figures, Figure* opposite_king);
+		void ApplyEntangledMoves(std::vector<Figure*>& player_figures);
+		void KingMechanic(Field* chessboard[][8], std::vector<Figure*>& player_figures, std::vector<Figure*>& opposite_player_figures, Figure* king, bool& checkmate);
+		void RemoveUnavailableMoves(std::vector<Figure*>& player_figures);
 
 	public:
-		AI(Field* chessboard[][8]);
+		AI();
 		~AI();
 
 		// AI update
-		void UpdateAI(Field* chessboard[][8], std::vector<Figure*>& computer_figures);
+		void UpdateAI(Field* chessboard[][8], std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Figure* player_king, Figure* computer_king, Figure* figure_to_remove);
+		void UpdateBoard(Field* chessboard[][8], std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Figure* player_king, Figure* computer_king, Figure* figure_to_remove, bool& checkmate);
 
 		Figure* MoveFigure() { return best_move.figure; }
 		Field_ID MoveToField() { return best_move.field_ID; }

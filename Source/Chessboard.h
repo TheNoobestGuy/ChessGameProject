@@ -2,26 +2,6 @@
 
 #include "AI.h"
 
-// Figures
-#include "Pawn.h"
-#include "Knight.h"
-#include "Bishop.h"
-#include "Rook.h"
-#include "Queen.h"
-#include "King.h"
-
-struct FigureMove
-{
-	int x = 0;
-	int y = 0;
-	Figure* attacked_figure = nullptr;
-
-	~FigureMove()
-	{
-		attacked_figure = nullptr;
-	}
-};
-
 class Chessboard
 {
 	private:
@@ -69,17 +49,8 @@ class Chessboard
 		// Board features
 		void DrawBoard();
 		void DrawFigures();
-		void EvaluateBoardValue();
-		void RemoveFromBoard();
-		void AttachPositionsToBoard();
 
 		// Figures features
-		void HasBecomeQueen();
-		void MarkFieldsUnderAttack(std::vector<Figure*>& player_figures);
-		void CalculateFigureMoves(std::vector<Figure*>& player_figures);
-		void KingMechanic(std::vector<Figure*>& player_figures, std::vector<Figure*>& opposite_player_figures, Figure* king);
-		void CheckForEntangling(std::vector<Figure*>& player_figures, Figure* opposite_king);
-		void ApplyEntangledMoves(std::vector<Figure*>& player_figures);
 		void EndGameCondition();
 		void PickedUpFigure();
 		void DrawMarksForMovesWhenPicked();
