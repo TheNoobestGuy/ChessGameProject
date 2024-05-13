@@ -228,10 +228,6 @@ void Chessboard::BoardUpdate()
 	{
 		checkmate = false;
 
-		std::cout << std::endl;
-		std::cout << "Turn comp: " << computer_turn << std::endl;
-		std::cout << "update board" << std::endl;
-
 		// Calculate positions on board
 		Computer->UpdateBoard(chessboard, player_figures, computer_figures, player_king, computer_king, figure_to_remove, checkmate);
 

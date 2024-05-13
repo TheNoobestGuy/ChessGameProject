@@ -58,6 +58,7 @@ class AI
 {
 	private:
 		// TEST
+		Field* newChessboard[8][8];
 		Field best_move;
 
 		// Evaluating moves algorithm

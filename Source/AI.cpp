@@ -89,8 +89,6 @@ void AI::EvaluatingMovesAlgorithm(Field* chessboard[][8], Field& base_move, Fiel
 		return;
 	}
 
-	Field* newChessboard[8][8];
-
 	for (Field_ID field : move.figure->available_moves)
 	{
 		CheckMove(chessboard, newChessboard, move);
