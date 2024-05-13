@@ -42,16 +42,6 @@ void AI::UpdateBoard(Field* chessboard[][8], std::vector<Figure*>& player_figure
 	// Remove unavailable moves
 	RemoveUnavailableMoves(player_figures);
 	RemoveUnavailableMoves(computer_figures);
-
-	for (Figure* figure : computer_figures)
-	{
-		std::cout << std::endl;
-		std::cout << figure->GetName() << std::endl;
-		for (Field_ID x : figure->available_moves)
-		{
-			std::cout << x.x << ", " << x.y << ": " << x.available_move << std::endl;
-		}
-	}
 }
 
 void AI::UpdateAI(Field* chessboard[][8], std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Figure* player_king, Figure* computer_king, Figure* figure_to_remove)
@@ -91,27 +81,31 @@ int AI::EvaluateBoard(Field* chessboard[][8], Field& move, bool computer_turn)
 	return value;
 }
 
-void AI::EvaluatingMovesAlgorithm(Field* chessboard[][8], Field move, std::vector<Figure*> player_figures, std::vector<Figure*> computer_figures, Figure* player_king, Figure* computer_king, Figure* figure_to_remove, bool& computer_turn, bool checkmate, int& value, int depth)
+void AI::EvaluatingMovesAlgorithm(Field* chessboard[][8], Field& base_move, Field& move, std::vector<std::tuple<int, Field>>& moves, std::vector<Figure*> player_figures, std::vector<Figure*> computer_figures, Figure* player_king, Figure* computer_king, Figure* figure_to_remove, bool& computer_turn, bool checkmate, int& value, int depth)
 {
 	if (depth == 0)
 	{
+		moves.push_back({ value, base_move });
 		return;
 	}
 
 	Field* newChessboard[8][8];
 
-	//CheckMove(chessboard, newChessboard, move);
+	for (Field_ID field : move.figure->available_moves)
+	{
+		CheckMove(chessboard, newChessboard, move);
 
-	//UpdateBoard(newChessboard, player_figures, computer_figures, player_king, computer_king, figure_to_remove, checkmate);
+		UpdateBoard(newChessboard, player_figures, computer_figures, player_king, computer_king, figure_to_remove, checkmate);
 
-	value += EvaluateBoard(newChessboard, move, computer_turn);
+		value += EvaluateBoard(newChessboard, move, computer_turn);
 
-	EvaluatingMovesAlgorithm(newChessboard, move, player_figures, computer_figures, player_king, computer_king, figure_to_remove, computer_turn, checkmate, value, depth - 1);
+		EvaluatingMovesAlgorithm(newChessboard, base_move, move, moves, player_figures, computer_figures, player_king, computer_king, figure_to_remove, computer_turn, checkmate, value, depth - 1);
+	}
 }
 
 Field AI::FindBestMove(Field* chessboard[][8], std::vector<Figure*> player_figures, std::vector<Figure*> computer_figures, Figure* player_king, Figure* computer_king, Figure* figure_to_remove, int depth)
 {
-	moves_values.clear();
+	std::vector<std::tuple<int, Field>> moves;
 
 	for (Figure* figure : computer_figures)
 	{
@@ -125,25 +119,44 @@ Field AI::FindBestMove(Field* chessboard[][8], std::vector<Figure*> player_figur
 
 			int value = EvaluateBoard(chessboard, move, computer_turn);
 
-			//EvaluatingMovesAlgorithm(chessboard, move, player_figures, computer_figures, player_king, computer_king, figure_to_remove, computer_turn, checkmate, value, depth - 1);
-
-			std::cout << "FINAL: " << value << std::endl;
-
-			moves_values.push_back({ value, move });
+			EvaluatingMovesAlgorithm(chessboard, move, move, moves, player_figures, computer_figures, player_king, computer_king, figure_to_remove, computer_turn, checkmate, value, depth - 1);
 		}
 	}
 
+	std::vector<Field> best_moves;
 	Field best_move;
 	int buffor = INT_MIN;
 
-	for (std::tuple<int, Field> move : moves_values)
+	for (std::tuple<int, Field> move : moves)
 	{
 		if (std::get<0>(move) > buffor)
 		{
 			buffor = std::get<0>(move);
-			best_move = std::get<1>(move);
 		}
 	}
+
+	for (std::tuple<int, Field> move : moves)
+	{
+		//std::cout << std::endl;
+		//std::cout << "Value: " << std::get<0>(move) << ", Field: " << std::get<1>(move).field_ID.x << ", " << std::get<1>(move).field_ID.y << std::endl;
+		if (std::get<0>(move) >= buffor)
+		{
+			buffor = std::get<0>(move);
+			best_move = std::get<1>(move);
+
+			best_moves.push_back(best_move);
+		}
+	}
+
+	// Generate random value from given range for moves
+	std::random_device rd;
+	std::mt19937 gen(rd());
+
+	std::uniform_int_distribution<> distribution(0, best_moves.size()-1);
+	
+	int random = distribution(gen);
+
+	best_move = best_moves[random];
 
 	return best_move;
 }
