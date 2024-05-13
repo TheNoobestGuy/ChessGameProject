@@ -49,7 +49,7 @@ void AI::UpdateBoard(Field* chessboard[][8], std::vector<Figure*>& player_figure
 		std::cout << figure->GetName() << std::endl;
 		for (Field_ID x : figure->available_moves)
 		{
-			std::cout << x.x << ", " << x.y << std::endl;
+			std::cout << x.x << ", " << x.y << ": " << x.available_move << std::endl;
 		}
 	}
 }
@@ -361,6 +361,7 @@ void AI::CalculateFigureMoves(Field* chessboard[][8], std::vector<Figure*>& play
 									figure->available_moves.push_back({ move_x, move_y });
 									figure->available_moves.back().move_axis = move;
 									figure->available_moves.back().available_move = false;
+
 									next_axis = true;
 								}
 								else
@@ -374,8 +375,14 @@ void AI::CalculateFigureMoves(Field* chessboard[][8], std::vector<Figure*>& play
 									{
 										figure->way_to_opposite_king = way_to_king;
 										way_to_king.clear();
+
+										figure->available_moves.back().available_move = false;
 									}
+
+									chessboard[move_y][move_x]->field_under_attack[figure->GetPlayer()] = true;
 								}
+
+								unavailable_moves = true;
 							}
 							// If friendly figure encountered append its position as last attack in axis
 							else
@@ -383,8 +390,6 @@ void AI::CalculateFigureMoves(Field* chessboard[][8], std::vector<Figure*>& play
 								chessboard[move_y][move_x]->field_under_attack[figure->GetPlayer()] = true;
 								next_axis = true;
 							}
-							
-							unavailable_moves = true;
 						}
 						else
 						{
@@ -811,6 +816,7 @@ void AI::RemoveUnavailableMoves(std::vector<Figure*>& player_figures)
 				if (figure->available_moves[move].available_move == false)
 				{
 					figure->available_moves.erase(figure->available_moves.begin() + move);
+					move--;
 				}
 			}
 		}
