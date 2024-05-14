@@ -7,6 +7,8 @@ class MainMenu
 	private:
 		int selected;
 		Text* marked;
+		bool clicked;
+		SDL_Color marked_color;
 
 	public:
 		MainMenu();
@@ -16,7 +18,7 @@ class MainMenu
 		Text menu_selection[5];
 
 		// Options
-		Text options_selection[1];
+		Text options_selection[3];
 
 		// Scenes handling
 		int scene;

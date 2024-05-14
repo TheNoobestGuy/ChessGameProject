@@ -9,7 +9,8 @@ int GameEngine::stage;
 bool GameEngine::initialize_stage;
 
 // Game Handler
-int GameEngine::human_player = WHITE_FIGURES;
+int GameEngine::enemy = COMPUTER;
+int GameEngine::human_player = BLACK_FIGURES;
 bool GameEngine::reset_game;
 bool GameEngine::end_game;
 
@@ -17,6 +18,7 @@ bool GameEngine::end_game;
 bool GameEngine::key_down;
 
 // Mouse tracer
+bool GameEngine::mouse_clicked;
 bool GameEngine::mouse_left;
 int GameEngine::mouse_x;
 int GameEngine::mouse_y;
@@ -86,9 +88,10 @@ void GameEngine::EventHandler(bool allowEvent)
 			break;
 
 		case SDL_MOUSEBUTTONDOWN:
-			if (event.button.button == SDL_BUTTON_LEFT)
+			if (event.button.button == SDL_BUTTON_LEFT && !GameEngine::mouse_clicked)
 			{
 				GameEngine::mouse_left = true;
+				GameEngine::mouse_clicked = true;
 			}
 			break;
 
@@ -96,6 +99,7 @@ void GameEngine::EventHandler(bool allowEvent)
 			if (event.button.button == SDL_BUTTON_LEFT)
 			{
 				GameEngine::mouse_left = false;
+				GameEngine::mouse_clicked = false;
 			}
 			break;
 

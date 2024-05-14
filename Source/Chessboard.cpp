@@ -243,24 +243,27 @@ void Chessboard::BoardUpdate()
 
 void Chessboard::AIComponent()
 {
-	if (computer_turn && !end_game)
+	if (GameEngine::enemy == COMPUTER)
 	{
-		Computer->UpdateAI(chessboard, player_figures, computer_figures, player_king, computer_king, figure_to_remove);
-		
-		current_figure = Computer->MoveFigure();
-
-		if (current_figure != nullptr)
+		if (computer_turn && !end_game)
 		{
-			move_to.x = Computer->MoveToField().x;
-			move_to.y = Computer->MoveToField().y;
+			Computer->UpdateAI(chessboard, player_figures, computer_figures, player_king, computer_king, figure_to_remove);
 
-			if (chessboard[move_to.y][move_to.x]->figure != nullptr)
-				move_to.attacked_figure = chessboard[move_to.y][move_to.x]->figure;
+			current_figure = Computer->MoveFigure();
+
+			if (current_figure != nullptr)
+			{
+				move_to.x = Computer->MoveToField().x;
+				move_to.y = Computer->MoveToField().y;
+
+				if (chessboard[move_to.y][move_to.x]->figure != nullptr)
+					move_to.attacked_figure = chessboard[move_to.y][move_to.x]->figure;
+			}
+
+			make_move = true;
+			update_board = true;
+			computer_moved = true;
 		}
-
-		make_move = true;
-		update_board = true;
-		computer_moved = true;
 	}
 }
 
@@ -272,14 +275,14 @@ void Chessboard::SwitchTurns()
 		{
 			player_turn = false;
 			computer_turn = true;
-			computer_moved = false;
 		}
 		else
 		{
 			player_turn = true;
 			computer_turn = false;
-			computer_moved = false;
 		}
+
+		computer_moved = false;
 	}
 }
 
@@ -292,6 +295,17 @@ void Chessboard::UpdateFigures()
 			PickedUpFigure();
 
 			for (Figure* figure : player_figures)
+			{
+				figure->PickUp(figure_picked_up);
+			}
+
+			PickedUpDestination();
+		}
+		else if (computer_turn && GameEngine::enemy == HUMAN)
+		{
+			PickedUpFigure();
+
+			for (Figure* figure : computer_figures)
 			{
 				figure->PickUp(figure_picked_up);
 			}
@@ -311,12 +325,19 @@ void Chessboard::RenderFigures()
 
 		DrawBoard();
 
-		DrawMarksForMovesWhenPicked();
+		if (GameEngine::enemy == HUMAN && computer_turn)
+		{
+			DrawMarksForMovesWhenPicked(computer_figures);
+		}
+		else
+		{
+			DrawMarksForMovesWhenPicked(player_figures);
+		}
 
 		DrawFigures();
 
 		// Render the picked up figure in front
-		if (player_turn && current_figure != nullptr)
+		if (current_figure != nullptr)
 			current_figure->Render();
 
 		SDL_RenderPresent(GameEngine::renderer);
@@ -468,17 +489,31 @@ void Chessboard::PickedUpFigure()
 {
 	current_figure = nullptr;
 
-	for (Figure* figure : player_figures)
+	if (GameEngine::enemy == HUMAN && computer_turn)
 	{
-		if (figure->PickedUp())
+		for (Figure* figure : computer_figures)
 		{
-			current_figure = figure;
-			break;
+			if (figure->PickedUp())
+			{
+				current_figure = figure;
+				break;
+			}
+		}
+	}
+	else
+	{
+		for (Figure* figure : player_figures)
+		{
+			if (figure->PickedUp())
+			{
+				current_figure = figure;
+				break;
+			}
 		}
 	}
 }
 
-void Chessboard::DrawMarksForMovesWhenPicked()
+void Chessboard::DrawMarksForMovesWhenPicked(std::vector<Figure*>& player_figures)
 {
 	for (Figure* figure : player_figures)
 	{
@@ -564,7 +599,7 @@ void Chessboard::MoveFigure()
 {
 	if (current_figure != nullptr)
 	{
-		if (first_turn && computer_turn)
+		if (first_turn && computer_turn && GameEngine::enemy == COMPUTER)
 		{
 			std::this_thread::sleep_for(std::chrono::milliseconds(400));
 			first_turn = false;
@@ -606,11 +641,11 @@ void Chessboard::MoveFigure()
 				{
 					if (current_figure->GetPlayer() == COMPUTER)
 					{
-						figure_to_remove = chessboard[move_to.y + 1][move_to.x]->figure;
+						figure_to_remove = chessboard[move_to.y - 1][move_to.x]->figure;
 					}
 					else
 					{
-						figure_to_remove = chessboard[move_to.y - 1][move_to.x]->figure;
+						figure_to_remove = chessboard[move_to.y + 1][move_to.x]->figure;
 					}
 				}
 				else if (move_to.attacked_figure == nullptr)
@@ -630,7 +665,7 @@ void Chessboard::MoveFigure()
 			move_to.attacked_figure = nullptr;
 			first_turn = false;
 
-			if (computer_turn)
+			if (computer_turn && GameEngine::enemy == COMPUTER)
 			{
 				std::this_thread::sleep_for(std::chrono::milliseconds(400));
 				computer_turn = false;

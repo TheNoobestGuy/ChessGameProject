@@ -7,6 +7,13 @@ AI::AI()
 
 AI::~AI()
 {
+	for (int row = 0; row < 8; row++)
+	{
+		for (int col = 0; col < 8; col++)
+		{
+			newChessboard[row][col] = nullptr;
+		}
+	}
 }
 
 void AI::UpdateBoard(Field* chessboard[][8], std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Figure* player_king, Figure* computer_king, Figure* figure_to_remove, bool& checkmate)
@@ -52,7 +59,6 @@ void AI::UpdateAI(Field* chessboard[][8], std::vector<Figure*>& player_figures, 
 int AI::EvaluateBoard(Field* chessboard[][8], Field& move, bool computer_turn)
 {
 	int value = 0;
-	bool exit = false;
 
 	for (int row = 0; row < 8; row++)
 	{
@@ -64,24 +70,17 @@ int AI::EvaluateBoard(Field* chessboard[][8], Field& move, bool computer_turn)
 				{
 					if (chessboard[row][col]->figure->GetPlayer() == HUMAN)
 					{
-						value += chessboard[row][col]->figure->GetValue();
-						exit = true;
-						break;
+						return chessboard[row][col]->figure->GetValue();
 					}
 				}
 			}
 		}
-
-		if (exit)
-		{
-			break;
-		}
 	}
 
-	return value;
+	return 0;
 }
 
-void AI::EvaluatingMovesAlgorithm(Field* chessboard[][8], Field& base_move, Field& move, std::vector<std::tuple<int, Field>>& moves, std::vector<Figure*> player_figures, std::vector<Figure*> computer_figures, Figure* player_king, Figure* computer_king, Figure* figure_to_remove, bool& computer_turn, bool checkmate, int& value, int depth)
+void AI::EvaluatingMovesAlgorithm(Field* chessboard[][8], Field& base_move, Field& move, std::vector<std::tuple<int, Field>>& moves, std::vector<Figure*> player_figures, std::vector<Figure*> computer_figures, Figure* player_king, Figure* computer_king, Figure* figure_to_remove, bool& computer_turn, bool checkmate, int value, int level, int depth)
 {
 	if (depth == 0)
 	{
@@ -89,16 +88,41 @@ void AI::EvaluatingMovesAlgorithm(Field* chessboard[][8], Field& base_move, Fiel
 		return;
 	}
 
-	for (Field_ID field : move.figure->available_moves)
+	std::vector<Figure*>* figures = &computer_figures;
+
+	if (depth % 2 == 0)
 	{
-		CheckMove(chessboard, newChessboard, move);
-
-		UpdateBoard(newChessboard, player_figures, computer_figures, player_king, computer_king, figure_to_remove, checkmate);
-
-		value += EvaluateBoard(newChessboard, move, computer_turn);
-
-		EvaluatingMovesAlgorithm(newChessboard, base_move, move, moves, player_figures, computer_figures, player_king, computer_king, figure_to_remove, computer_turn, checkmate, value, depth - 1);
+		figures = &player_figures;
 	}
+
+	for (Figure* figure : *figures)
+	{
+		for (Field_ID field : figure->available_moves)
+		{
+			int move_value = value;
+
+			Field move = { field, 0, 0 };
+			move.figure = figure;
+
+			if (figure->GetPlayer() == HUMAN)
+			{
+				move_value -= EvaluateBoard(chessboard, move, computer_turn) + level;
+			}
+			else
+			{
+				move_value += EvaluateBoard(chessboard, move, computer_turn) - level;
+			}
+
+			CheckMove(chessboard, newChessboard, move);
+
+			UpdateBoard(newChessboard, player_figures, computer_figures, player_king, computer_king, figure_to_remove, checkmate);
+
+			EvaluatingMovesAlgorithm(newChessboard, move, move, moves, player_figures, computer_figures, player_king, computer_king, figure_to_remove, computer_turn, checkmate, move_value, level + 1, depth - 1);
+		}
+	}
+
+	figures = nullptr;
+	return;
 }
 
 Field AI::FindBestMove(Field* chessboard[][8], std::vector<Figure*> player_figures, std::vector<Figure*> computer_figures, Figure* player_king, Figure* computer_king, Figure* figure_to_remove, int depth)
@@ -111,13 +135,18 @@ Field AI::FindBestMove(Field* chessboard[][8], std::vector<Figure*> player_figur
 		{
 			bool computer_turn = true;
 			bool checkmate = false;
+			int level = 0;
 
 			Field move = { field, 0, 0 };
 			move.figure = figure;
 
 			int value = EvaluateBoard(chessboard, move, computer_turn);
 
-			EvaluatingMovesAlgorithm(chessboard, move, move, moves, player_figures, computer_figures, player_king, computer_king, figure_to_remove, computer_turn, checkmate, value, depth - 1);
+			CheckMove(chessboard, newChessboard, move);
+
+			UpdateBoard(newChessboard, player_figures, computer_figures, player_king, computer_king, figure_to_remove, checkmate);
+
+			EvaluatingMovesAlgorithm(newChessboard, move, move, moves, player_figures, computer_figures, player_king, computer_king, figure_to_remove, computer_turn, checkmate, value, level + 1, depth);
 		}
 	}
 
@@ -133,6 +162,8 @@ Field AI::FindBestMove(Field* chessboard[][8], std::vector<Figure*> player_figur
 		}
 	}
 
+	//std::cout << std::endl;
+	//std::cout << "Moves: " << std::endl;
 	for (std::tuple<int, Field> move : moves)
 	{
 		//std::cout << std::endl;

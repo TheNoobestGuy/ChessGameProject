@@ -52,11 +52,13 @@ class GameEngine
 		static bool initialize_stage;
 
 		// Game scene
+		static int enemy;
 		static int human_player;
 		static bool reset_game;
 		static bool end_game;
 		
 		// Mouse handler
+		static bool mouse_clicked;
 		static bool mouse_left;
 		static int mouse_x;
 		static int mouse_y;
