@@ -372,6 +372,8 @@ void AI::CalculateFigureMoves(Field* chessboard[][8], std::vector<Figure*>& play
 					{
 						figure->available_moves.push_back({ move_x, move_y });
 					}
+
+					chessboard[move_y][move_x]->field_under_attack[figure->GetPlayer()] = true;
 				}
 			}
 		}
@@ -448,6 +450,7 @@ void AI::CalculateFigureMoves(Field* chessboard[][8], std::vector<Figure*>& play
 								figure->available_moves.back().available_move = true;
 
 								way_to_king.push_back(figure->available_moves.back());
+								chessboard[move_y][move_x]->field_under_attack[figure->GetPlayer()] = true;
 							}
 						}
 					}
@@ -500,6 +503,8 @@ void AI::CalculateFigureMoves(Field* chessboard[][8], std::vector<Figure*>& play
 					{
 						figure->available_moves.push_back({ move_x, move_y });
 					}
+
+					chessboard[move_y][move_x]->field_under_attack[figure->GetPlayer()] = true;
 				}
 			}
 		}
@@ -553,6 +558,8 @@ void AI::CalculateFigureMoves(Field* chessboard[][8], std::vector<Figure*>& play
 					{
 						chessboard[attack_y][attack_x]->field_under_attack[figure->GetPlayer()] = true;
 					}
+
+					chessboard[move_y][move_x]->field_under_attack[figure->GetPlayer()] = true;
 				}
 			}
 
@@ -752,6 +759,11 @@ void AI::KingMechanic(Field* chessboard[][8], std::vector<Figure*>& player_figur
 
 	if (king->GetPlayer() == COMPUTER)
 		opposite_player = HUMAN;
+	// Castling
+	if (king->IsItFirstMove())
+	{
+
+	}
 
 	// Remove unavailable moves from king pool of moves
 	std::vector<Field_ID> buffor;

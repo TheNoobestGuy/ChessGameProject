@@ -53,7 +53,7 @@ class Chessboard
 		// Figures features
 		void EndGameCondition();
 		void PickedUpFigure();
-		void DrawMarksForMovesWhenPicked(std::vector<Figure*>& player_figures);
+		void DrawMarksForMovesWhenPicked(std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures);
 		void PickedUpDestination();
 		void MoveFigure();
 

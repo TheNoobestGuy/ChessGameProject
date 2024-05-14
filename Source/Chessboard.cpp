@@ -327,11 +327,11 @@ void Chessboard::RenderFigures()
 
 		if (GameEngine::enemy == HUMAN && computer_turn)
 		{
-			DrawMarksForMovesWhenPicked(computer_figures);
+			DrawMarksForMovesWhenPicked(computer_figures, player_figures);
 		}
 		else
 		{
-			DrawMarksForMovesWhenPicked(player_figures);
+			DrawMarksForMovesWhenPicked(player_figures, computer_figures);
 		}
 
 		DrawFigures();
@@ -513,7 +513,7 @@ void Chessboard::PickedUpFigure()
 	}
 }
 
-void Chessboard::DrawMarksForMovesWhenPicked(std::vector<Figure*>& player_figures)
+void Chessboard::DrawMarksForMovesWhenPicked(std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures)
 {
 	for (Figure* figure : player_figures)
 	{
