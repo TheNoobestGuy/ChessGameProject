@@ -758,11 +758,65 @@ void AI::KingMechanic(Field* chessboard[][8], std::vector<Figure*>& player_figur
 	int opposite_player = COMPUTER;
 
 	if (king->GetPlayer() == COMPUTER)
+	{
 		opposite_player = HUMAN;
+	}
+
 	// Castling
 	if (king->IsItFirstMove())
 	{
+		int rook_x_1 = 0;
+		int rook_x_2 = 7;
+		int rook_y = 0;
 
+		if (king->GetPlayer() == HUMAN)
+		{
+			rook_y = 7;
+		}
+
+		for (int move = 2; move < 4; move++)
+		{
+			bool next_axis = false;
+			int move_x = king->GetField().x;
+
+			while (!next_axis)
+			{
+				move_x += king->moves_list[move].x;
+
+				std::cout << move_x << ", " << rook_y << std::endl;
+
+				// Checking is there any possible castling
+				if (move_x >= 0 && move_x < 8)
+				{
+					if (chessboard[rook_y][move_x]->figure != nullptr)
+					{
+						if (chessboard[rook_y][move_x]->figure->GetName() == "Rook" && chessboard[rook_y][move_x]->figure->GetPlayer() == king->GetPlayer())
+						{
+							if (chessboard[rook_y][move_x]->figure->GetField().x == rook_x_1 || chessboard[rook_y][move_x]->figure->GetField().x == rook_x_2)
+							{
+								if (chessboard[rook_y][move_x]->figure->GetField().y == rook_y)
+								{
+									king->available_moves.push_back({ move_x, rook_y });
+									next_axis = true;
+								}
+							}
+						}
+						else
+						{
+							next_axis = true;
+						}
+					}
+					else if (chessboard[rook_y][move_x]->field_under_attack[opposite_player_figures.back()->GetPlayer()])
+					{
+						next_axis = true;
+					}
+				}
+				else
+				{
+					next_axis = true;
+				}
+			}
+		}
 	}
 
 	// Remove unavailable moves from king pool of moves

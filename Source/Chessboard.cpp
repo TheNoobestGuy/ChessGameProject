@@ -599,6 +599,7 @@ void Chessboard::MoveFigure()
 {
 	if (current_figure != nullptr)
 	{
+		// Wait at first turn of AI before move
 		if (first_turn && computer_turn && GameEngine::enemy == COMPUTER)
 		{
 			std::this_thread::sleep_for(std::chrono::milliseconds(400));
@@ -606,34 +607,76 @@ void Chessboard::MoveFigure()
 		}
 
 		// Send new field ID to figure and check if there is any collision with some other figures
+		bool not_moved = true;
+
 		if (make_move && !current_figure->PickedUp())
 		{
-			// Attack			
-			if (move_to.attacked_figure != nullptr && move_to.attacked_figure->GetPlayer() != current_figure->GetPlayer())
+			if (move_to.attacked_figure != nullptr)
 			{
-				if (current_figure->GetPlayer() == HUMAN)
+				// Handling castling
+				if (move_to.attacked_figure->GetPlayer() == current_figure->GetPlayer())
 				{
-					for (Figure* figure : computer_figures)
+					if (move_to.attacked_figure->GetName() == "Rook")
 					{
-						if (figure->GetID() == move_to.attacked_figure->GetID())
+						if (move_to.attacked_figure->GetPlayer() == COMPUTER)
 						{
-							figure_to_remove = figure;
-							break;
+							if (move_to.attacked_figure->GetField().x == 0)
+							{
+								move_to.attacked_figure->ChangePosition({ 3, 0 });
+								current_figure->ChangePosition({ 2, 0 });
+							}
+							else
+							{
+								move_to.attacked_figure->ChangePosition({ 4, 0 });
+								current_figure->ChangePosition({ 5, 0 });
+							}
 						}
+						else
+						{
+							if (move_to.attacked_figure->GetField().x == 0)
+							{
+								move_to.attacked_figure->ChangePosition({ 3, 7 });
+								current_figure->ChangePosition({ 2, 7 });
+							}
+							else
+							{
+								move_to.attacked_figure->ChangePosition({ 4, 7 });
+								current_figure->ChangePosition({ 5, 7 });
+							}
+						}
+
+						not_moved = false;
 					}
 				}
+
+				// Removing attacked figure
 				else
 				{
-					for (Figure* figure : player_figures)
+					if (current_figure->GetPlayer() == HUMAN)
 					{
-						if (figure->GetID() == move_to.attacked_figure->GetID())
+						for (Figure* figure : computer_figures)
 						{
-							figure_to_remove = figure;
-							break;
+							if (figure->GetID() == move_to.attacked_figure->GetID())
+							{
+								figure_to_remove = figure;
+								break;
+							}
+						}
+					}
+					else
+					{
+						for (Figure* figure : player_figures)
+						{
+							if (figure->GetID() == move_to.attacked_figure->GetID())
+							{
+								figure_to_remove = figure;
+								break;
+							}
 						}
 					}
 				}
 			}
+
 			// En passant
 			if (current_figure->GetName() == "Pawn")
 			{
@@ -658,13 +701,18 @@ void Chessboard::MoveFigure()
 			}
 
 			// Make move
-			current_figure->ChangePosition({ move_to.x, move_to.y });
+			if (not_moved)
+			{
+				current_figure->ChangePosition({ move_to.x, move_to.y });
+			}
+
 			update_board = true;
 			make_move = false;
 			current_figure = nullptr;
 			move_to.attacked_figure = nullptr;
 			first_turn = false;
 
+			// Wait a little before moving figure in AI turn
 			if (computer_turn && GameEngine::enemy == COMPUTER)
 			{
 				std::this_thread::sleep_for(std::chrono::milliseconds(400));
