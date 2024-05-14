@@ -223,18 +223,6 @@ void AI::CheckMove(Field* chessboard[][8], Field* newChessboard[][8], Field& mov
 	}
 }
 
-void AI::deleteChessboard(Field* chessboard[][8])
-{
-	for (int row = 0; row < 8; row++)
-	{
-		for (int col = 0; col < 8; col++)
-		{
-			delete chessboard[row][col];
-			chessboard[row][col] = nullptr;
-		}
-	}
-}
-
 void AI::RemoveFromBoard(Figure* figure_to_remove, std::vector<Figure*>& player_figures,  std::vector<Figure*>& computer_figures)
 {
 	if (figure_to_remove != nullptr)
@@ -776,14 +764,12 @@ void AI::KingMechanic(Field* chessboard[][8], std::vector<Figure*>& player_figur
 
 		for (int move = 2; move < 4; move++)
 		{
-			bool next_axis = false;
 			int move_x = king->GetField().x;
+			bool next_axis = false;
 
 			while (!next_axis)
 			{
 				move_x += king->moves_list[move].x;
-
-				std::cout << move_x << ", " << rook_y << std::endl;
 
 				// Checking is there any possible castling
 				if (move_x >= 0 && move_x < 8)

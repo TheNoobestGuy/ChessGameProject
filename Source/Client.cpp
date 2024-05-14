@@ -63,6 +63,7 @@ int main(int argc, char* args[])
 					main_menu = new MainMenu();
 					GameEngine::mouse_left = false;
 					GameEngine::initialize_stage = false;
+					GameEngine::human_player = BLACK_FIGURES;
 				}
 
 				Main_menu_scene(main_menu);

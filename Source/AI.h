@@ -57,8 +57,6 @@ class AI
 		void CheckMove(Field* chessboard[][8], Field* newChessboard[][8], Field& move);
 		Field FindBestMove(Field* chessboard[][8], std::vector<Figure*> player_figures, std::vector<Figure*> computer_figures, Figure* player_king, Figure* computer_king, Figure* figure_to_remove, int depth);
 
-		void deleteChessboard(Field* chessboard[][8]);
-
 		// Board update features
 		void RemoveFromBoard(Figure* figure_to_remove, std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures);
 		void HasBecomeQueen(std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures);
