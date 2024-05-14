@@ -530,11 +530,30 @@ void Chessboard::DrawMarksForMovesWhenPicked(std::vector<Figure*>& player_figure
 				{
 					bool attack = false;
 
-					for (Figure* figure : computer_figures)
+					// Marking mere attack
+					for (Figure* enemyFigure : computer_figures)
 					{
-						if (field == figure->GetField())
+						if (field == enemyFigure->GetField())
 						{
 							attack = true;
+						}
+					}
+
+					// Castling marking
+					if (figure->GetName() == "King")
+					{
+						if (figure->IsItFirstMove())
+						{
+							for (Figure* allyFigure : player_figures)
+							{
+								if (allyFigure->GetName() == "Rook")
+								{
+									if (field == allyFigure->GetField())
+									{
+										attack = true;
+									}
+								}
+							}
 						}
 					}
 
