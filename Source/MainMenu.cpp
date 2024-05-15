@@ -62,8 +62,17 @@ void MainMenu::CreateOptions()
 	options_selection[0].unselected = TextureMenager::LoadFont(options_selection[0].text, options_selection[0].color);
 	options_selection[0].selected = TextureMenager::LoadFont(options_selection[0].text, marked_color);
 
-	options_selection[1].text = "AI";
-	options_selection[1].rect = GameEngine::CreateRectangle(SCREEN_WIDTH / 2 + 80, SCREEN_HEIGHT / 2 - 70, 40, 50);
+	if (GameEngine::enemy == COMPUTER)
+	{
+		options_selection[1].text = "AI";
+		options_selection[1].rect = GameEngine::CreateRectangle(SCREEN_WIDTH / 2 + 80, SCREEN_HEIGHT / 2 - 70, 40, 50);
+	}
+	else
+	{
+		options_selection[1].text = "PLAYER";
+		options_selection[1].rect = GameEngine::CreateRectangle(SCREEN_WIDTH / 2 + 70, SCREEN_HEIGHT / 2 - 70, 60, 50);
+	}
+
 	options_selection[1].unselected = TextureMenager::LoadFont(options_selection[1].text, options_selection[1].color);
 	options_selection[1].selected = TextureMenager::LoadFont(options_selection[1].text, marked_color);
 

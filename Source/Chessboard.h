@@ -6,8 +6,6 @@ class Chessboard
 {
 	private:
 		// Properties
-		bool player_turn;
-		bool computer_turn;
 		bool computer_moved;
 		bool first_turn;
 		bool end_game;
@@ -79,16 +77,16 @@ class Chessboard
 		std::vector<Figure*>& GetBlackPlayer() { return computer_figures;  }
 
 	private:
-		Texture fields_colors[2] =
-		{
-			{ TextureMenager::LoadTexture("Textures/Chessboard/whiteSqr.png") },
-			{ TextureMenager::LoadTexture("Textures/Chessboard/blackSqr.png") }
-		};
-
 		Texture marks[3] =
 		{
 			{ TextureMenager::LoadTexture("Textures/Chessboard/mark.png") },
 			{ TextureMenager::LoadTexture("Textures/Chessboard/berth.png") },
 			{ TextureMenager::LoadTexture("Textures/Chessboard/attack.png") }
+		};
+
+		Texture fields_colors[2] =
+		{
+			{ TextureMenager::LoadTexture("Textures/Chessboard/whiteSqr.png") },
+			{ TextureMenager::LoadTexture("Textures/Chessboard/blackSqr.png") }
 		};
 };

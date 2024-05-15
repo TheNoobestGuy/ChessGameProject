@@ -52,6 +52,7 @@ class GameEngine
 		static bool initialize_stage;
 
 		// Game scene
+		static int turn;
 		static int enemy;
 		static int human_player;
 		static bool reset_game;

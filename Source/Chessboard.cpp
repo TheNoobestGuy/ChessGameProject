@@ -5,13 +5,11 @@ Chessboard::Chessboard(int fields_size)
 	// Properties
 	if (GameEngine::human_player == WHITE_FIGURES)
 	{
-		this->player_turn = true;
-		this->computer_turn = false;
+		GameEngine::turn = HUMAN;
 	}
 	else
 	{
-		this->player_turn = false;
-		this->computer_turn = true;
+		GameEngine::turn = COMPUTER;
 	}
 	
 	this->first_turn = true;
@@ -245,7 +243,7 @@ void Chessboard::AIComponent()
 {
 	if (GameEngine::enemy == COMPUTER)
 	{
-		if (computer_turn && !end_game)
+		if (GameEngine::turn == COMPUTER && !end_game)
 		{
 			Computer->UpdateAI(chessboard, player_figures, computer_figures, player_king, computer_king, figure_to_remove);
 
@@ -271,15 +269,13 @@ void Chessboard::SwitchTurns()
 {
 	if (update_board)
 	{
-		if (player_turn)
+		if (GameEngine::turn == HUMAN)
 		{
-			player_turn = false;
-			computer_turn = true;
+			GameEngine::turn = COMPUTER;
 		}
 		else
 		{
-			player_turn = true;
-			computer_turn = false;
+			GameEngine::turn = HUMAN;
 		}
 
 		computer_moved = false;
@@ -290,7 +286,7 @@ void Chessboard::UpdateFigures()
 {
 	if (!end_game)
 	{
-		if (player_turn)
+		if (GameEngine::turn == HUMAN)
 		{
 			PickedUpFigure();
 
@@ -301,7 +297,7 @@ void Chessboard::UpdateFigures()
 
 			PickedUpDestination();
 		}
-		else if (computer_turn && GameEngine::enemy == HUMAN)
+		else if (GameEngine::turn == COMPUTER && GameEngine::enemy == HUMAN)
 		{
 			PickedUpFigure();
 
@@ -325,7 +321,7 @@ void Chessboard::RenderFigures()
 
 		DrawBoard();
 
-		if (GameEngine::enemy == HUMAN && computer_turn)
+		if (GameEngine::enemy == HUMAN && GameEngine::turn == COMPUTER)
 		{
 			DrawMarksForMovesWhenPicked(computer_figures, player_figures);
 		}
@@ -385,7 +381,7 @@ void Chessboard::EndGame()
 				DrawBoard();
 				DrawFigures();
 
-				if ((computer_turn && GameEngine::human_player == WHITE_FIGURES) || (player_turn && GameEngine::human_player == BLACK_FIGURES))
+				if ((GameEngine::turn == COMPUTER && GameEngine::human_player == WHITE_FIGURES) || (GameEngine::turn == HUMAN && GameEngine::human_player == BLACK_FIGURES))
 				{
 					TextureMenager::Draw(white_won.unselected, white_won.rect);
 				}
@@ -489,7 +485,7 @@ void Chessboard::PickedUpFigure()
 {
 	current_figure = nullptr;
 
-	if (GameEngine::enemy == HUMAN && computer_turn)
+	if (GameEngine::enemy == HUMAN && GameEngine::turn == COMPUTER)
 	{
 		for (Figure* figure : computer_figures)
 		{
@@ -619,7 +615,7 @@ void Chessboard::MoveFigure()
 	if (current_figure != nullptr)
 	{
 		// Wait at first turn of AI before move
-		if (first_turn && computer_turn && GameEngine::enemy == COMPUTER)
+		if (first_turn && GameEngine::turn == COMPUTER && GameEngine::enemy == COMPUTER)
 		{
 			std::this_thread::sleep_for(std::chrono::milliseconds(400));
 			first_turn = false;
@@ -732,10 +728,10 @@ void Chessboard::MoveFigure()
 			first_turn = false;
 
 			// Wait a little before moving figure in AI turn
-			if (computer_turn && GameEngine::enemy == COMPUTER)
+			if (GameEngine::turn == COMPUTER && GameEngine::enemy == COMPUTER)
 			{
 				std::this_thread::sleep_for(std::chrono::milliseconds(400));
-				computer_turn = false;
+				GameEngine::turn == HUMAN;
 			}
 		}
 	}

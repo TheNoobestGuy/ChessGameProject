@@ -9,6 +9,7 @@ int GameEngine::stage;
 bool GameEngine::initialize_stage;
 
 // Game Handler
+int GameEngine::turn = HUMAN;
 int GameEngine::enemy = COMPUTER;
 int GameEngine::human_player = BLACK_FIGURES;
 bool GameEngine::reset_game;

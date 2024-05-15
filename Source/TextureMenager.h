@@ -8,6 +8,7 @@ struct Text
 	SDL_Color color;
 	SDL_Rect rect;
 
+	int value = 0;
 	SDL_Texture* unselected = nullptr;
 	SDL_Texture* selected = nullptr;
 

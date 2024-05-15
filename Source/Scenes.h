@@ -18,6 +18,7 @@ void Main_menu_scene(MainMenu* main_menu)
 				main_menu->initialize_scene = false;
 				GameEngine::mouse_left = false;
 			}
+
 			main_menu->UpdateMainMenu();
 			main_menu->RenderMainMenu();
 

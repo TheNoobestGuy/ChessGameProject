@@ -3,6 +3,25 @@
 AI::AI()
 {
 	this->best_move = { {0, 0}, 0, 0};
+	this->marked = nullptr;
+
+	for (int i = 0; i < 6; i++)
+	{
+		chooseTopFigures[i] = new Text { "", {0, 0, 0}, GameEngine::CreateRectangle(0, 0, 64) };
+		chooseBottomFigures[i] = new Text { "", {0, 0, 0}, GameEngine::CreateRectangle(0, 0, 64) };
+	}
+
+	int choice_window_bottom_figures = 64;
+	int choice_window_top_figures = SCREEN_HEIGHT - 128;
+
+	if (GameEngine::human_player == BLACK_FIGURES)
+	{
+		choice_window_bottom_figures = SCREEN_HEIGHT - 128;
+		choice_window_top_figures = 64;
+	}
+
+	CreateChoiceWindow(WHITE_FIGURES, 64, 64, choice_window_bottom_figures, chooseBottomFigures);
+	CreateChoiceWindow(BLACK_FIGURES, 64, 64, choice_window_top_figures, chooseTopFigures);
 }
 
 AI::~AI()
@@ -14,6 +33,17 @@ AI::~AI()
 			newChessboard[row][col] = nullptr;
 		}
 	}
+
+	for (int i = 0; i < 6; i++)
+	{
+		delete chooseTopFigures[i];
+		chooseTopFigures[i] = nullptr;
+
+		delete chooseBottomFigures[i];
+		chooseBottomFigures[i] = nullptr;
+	}
+
+	marked = nullptr;
 }
 
 void AI::UpdateBoard(Field* chessboard[][8], std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Figure* player_king, Figure* computer_king, Figure* figure_to_remove, bool& checkmate)
@@ -22,7 +52,7 @@ void AI::UpdateBoard(Field* chessboard[][8], std::vector<Figure*>& player_figure
 	RemoveFromBoard(figure_to_remove, player_figures, computer_figures);
 
 	// Check does any pawn has become a queen
-	HasBecomeQueen(player_figures, computer_figures);
+	HasBecomeFigure(chessboard, player_figures, computer_figures);
 
 	// Attach positions of figures to a board
 	AttachPositionsToBoard(chessboard, player_figures, computer_figures);
@@ -260,7 +290,7 @@ void AI::RemoveFromBoard(Figure* figure_to_remove, std::vector<Figure*>& player_
 	}
 }
 
-void AI::HasBecomeQueen(std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures)
+void AI::HasBecomeFigure(Field* chessboard[][8], std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures)
 {
 	int QueenBecomeField[2] = { 0, 7 };
 
@@ -268,6 +298,18 @@ void AI::HasBecomeQueen(std::vector<Figure*>& player_figures, std::vector<Figure
 	{
 		if (player_figures[figure]->GetName() == "Pawn" && player_figures[figure]->GetField().y == QueenBecomeField[0])
 		{
+			// Window for choosing figure
+			int selected_figure = 0;
+
+			if (GameEngine::enemy != COMPUTER)
+			{
+				bool running = true;
+				int choice = 0;
+
+				ChoiceBetweenFigures(chessboard, player_figures, computer_figures, selected_figure, running, choice);
+			}
+
+			// Get position of pawn and delete it from board
 			int tempID = player_figures[figure]->GetID();
 			int tempColor = player_figures[figure]->GetColor();
 			Field_ID tempField = player_figures[figure]->GetField();
@@ -276,7 +318,30 @@ void AI::HasBecomeQueen(std::vector<Figure*>& player_figures, std::vector<Figure
 			player_figures[figure] = nullptr;
 			player_figures.erase(player_figures.begin() + figure);
 
-			player_figures.push_back(new Queen("Queen", tempID, tempField, tempColor, 64, 9));
+			// Push new figure
+			switch (selected_figure)
+			{
+			case 0:
+				player_figures.push_back(new Queen("Queen", tempID, tempField, tempColor, 64, 9));
+				break;
+
+			case 1:
+				player_figures.push_back(new Rook("Rook", tempID, tempField, tempColor, 64, 5));
+				break;
+
+			case 2:
+				player_figures.push_back(new Knight("Knight", tempID, tempField, tempColor, 64, 3));
+				break;
+
+			case 3:
+				player_figures.push_back(new Bishop("Bishop", tempID, tempField, tempColor, 64, 3));
+				break;
+
+			default:
+				player_figures.push_back(new Queen("Queen", tempID, tempField, tempColor, 64, 9));
+				break;
+			}
+
 			player_figures.back()->SetPlayer(HUMAN);
 			player_figures.back()->PossibleMoves();
 		}
@@ -286,6 +351,18 @@ void AI::HasBecomeQueen(std::vector<Figure*>& player_figures, std::vector<Figure
 	{
 		if (computer_figures[figure]->GetName() == "Pawn" && computer_figures[figure]->GetField().y == QueenBecomeField[1])
 		{
+			// Window for choosing figure
+			int selected_figure = 0;
+
+			if (GameEngine::enemy != COMPUTER)
+			{
+				bool running = true;
+				int choice = 0;
+
+				ChoiceBetweenFigures(chessboard, player_figures, computer_figures, selected_figure, running, choice);
+			}
+
+			// Get position of pawn and delete it from board
 			int tempID = computer_figures[figure]->GetID();
 			int tempColor = computer_figures[figure]->GetColor();
 			Field_ID tempField = computer_figures[figure]->GetField();
@@ -294,10 +371,222 @@ void AI::HasBecomeQueen(std::vector<Figure*>& player_figures, std::vector<Figure
 			computer_figures[figure] = nullptr;
 			computer_figures.erase(computer_figures.begin() + figure);
 
-			computer_figures.push_back(new Queen("Queen", tempID, tempField, tempColor, 64, 9));
+			// Push new figure
+			switch (selected_figure)
+			{
+			case 0:
+				computer_figures.push_back(new Queen("Queen", tempID, tempField, tempColor, 64, 9));
+				break;
+
+			case 1:
+				computer_figures.push_back(new Rook("Rook", tempID, tempField, tempColor, 64, 5));
+				break;
+
+			case 2:
+				computer_figures.push_back(new Knight("Knight", tempID, tempField, tempColor, 64, 3));
+				break;
+
+			case 3:
+				computer_figures.push_back(new Bishop("Bishop", tempID, tempField, tempColor, 64, 3));
+				break;
+
+			default:
+				computer_figures.push_back(new Queen("Queen", tempID, tempField, tempColor, 64, 9));
+				break;
+			}
+
 			computer_figures.back()->SetPlayer(COMPUTER);
 			computer_figures.back()->PossibleMoves();
 		}
+	}
+}
+
+void AI::CreateChoiceWindow(int figures_color, int start_field, int field, int field_y, Text* options[6])
+{
+	int field_x = start_field + field;
+
+	for (int i = 1; i < 5; i++)
+	{
+		int buffor = i - 1;
+
+		options[i]->rect.x = field_x;
+		options[i]->rect.y = field_y;
+
+		options[i]->text += buffor;
+		options[i]->unselected = choiceFiguresUnselected[figures_color][buffor].texture;
+		options[i]->selected = choiceFiguresSelected[figures_color][buffor].texture;
+
+		field_x += field;
+	}
+
+	field_x = start_field;
+	for (int i = 0, border = 0; i < 6; i += 5, border++)
+	{
+		options[i]->rect.x = field_x;
+		options[i]->rect.y = field_y;
+
+		options[i]->unselected = choiceBorders[border].texture;
+
+		field_x = start_field + (field * 5);
+	}
+}
+
+void AI::ChoiceBetweenFigures(Field* chessboard[][8], std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, int& selected_figure, bool& running, int& choice)
+{
+	marked = nullptr;
+	Text* options[6];
+
+	if (GameEngine::turn == COMPUTER)
+	{
+		if (GameEngine::human_player == WHITE_FIGURES)
+		{
+			for (int i = 0; i < 6; i++)
+			{
+				options[i] = chooseBottomFigures[i];
+			}
+		}
+		else
+		{
+			for (int i = 0; i < 6; i++)
+			{
+				options[i] = chooseTopFigures[i];
+			}
+		}
+	}
+	else
+	{
+		if (GameEngine::human_player == WHITE_FIGURES)
+		{
+			for (int i = 0; i < 6; i++)
+			{
+				options[i] = chooseTopFigures[i];
+			}
+		}
+		else
+		{
+			for (int i = 0; i < 6; i++)
+			{
+				options[i] = chooseBottomFigures[i];
+			}
+		}
+	}
+
+	while (running)
+	{
+		RenderChoice(chessboard, player_figures, computer_figures, options);
+		UpdateChoice(options, selected_figure, running);
+		EventHandlerForChoice(running, choice);
+	}
+
+	marked = nullptr;
+	GameEngine::mouse_left = false;
+}
+
+void AI::UpdateChoice(Text* options[6], int& selected_figure, bool& running)
+{
+	// Check for selection from options
+	std::string figure_name;
+
+	for (int select = 1; select < 5; select++)
+	{
+		if (marked == nullptr)
+		{
+			if (GameEngine::CollisionDetector(GameEngine::mouse_x, GameEngine::mouse_y, &options[select]->rect))
+			{
+				marked = options[select];
+				marked->value = select - 1;
+			}
+		}
+		else
+		{
+			if (!GameEngine::CollisionDetector(GameEngine::mouse_x, GameEngine::mouse_y, &marked->rect))
+			{
+				marked = nullptr;
+			}
+			else
+			{
+				if (GameEngine::mouse_left)
+				{
+					selected_figure = marked->value;
+
+					GameEngine::mouse_left = false;
+					marked = nullptr;
+					running = false;
+					break;
+				}
+			}
+		}
+	}
+}
+
+void AI::RenderChoice(Field* chessboard[][8], std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Text* options[6])
+{
+	SDL_RenderClear(GameEngine::renderer);
+
+	// Render chessboard
+	for (int row = 0; row < 8; row++)
+	{
+		for (int col = 0; col < 8; col++)
+		{
+			if (chessboard[row][col]->color == BLACK)
+				TextureMenager::Draw(fields_colors[1].texture, fields_colors[1].srcRect, chessboard[row][col]->field_rect);
+			else
+				TextureMenager::Draw(fields_colors[0].texture, fields_colors[0].srcRect, chessboard[row][col]->field_rect);
+		}
+	}
+
+	for (Figure* figure : player_figures)
+	{
+		figure->Render();
+	}
+
+	for (Figure* figure : computer_figures)
+	{
+		figure->Render();
+	}
+
+	// Render option window
+	for (int i = 0; i < 6; i++)
+	{
+		TextureMenager::Draw(options[i]->unselected, options[i]->rect);
+	}
+
+	// Render selected
+	if (marked != nullptr)
+	{
+		TextureMenager::Draw(marked->selected, marked->rect);
+	}
+
+	SDL_RenderPresent(GameEngine::renderer);
+}
+
+void AI::EventHandlerForChoice(bool& running, int& choice)
+{
+	SDL_Event event;
+	SDL_PollEvent(&event);
+
+	SDL_GetMouseState(&GameEngine::mouse_x, &GameEngine::mouse_y);
+
+	switch (event.type)
+	{
+	case SDL_QUIT:
+		running = false;
+		GameEngine::isRunning = false;
+		break;
+
+	case SDL_MOUSEBUTTONDOWN:
+		GameEngine::mouse_left = true;
+		break;
+
+	case SDL_KEYDOWN:
+		if (event.key.keysym.sym == SDLK_ESCAPE)
+		{
+			GameEngine::end_game = true;
+		}
+		break;
+
+	default:
+		break;
 	}
 }
 
@@ -482,10 +771,6 @@ void AI::CalculateFigureMoves(Field* chessboard[][8], std::vector<Figure*>& play
 								figure->way_to_opposite_king.push_back({ move_x, move_y });
 							}
 						}
-						else
-						{
-							chessboard[move_y][move_x]->field_under_attack[figure->GetPlayer()] = true;
-						}
 					}
 					else
 					{
@@ -542,12 +827,8 @@ void AI::CalculateFigureMoves(Field* chessboard[][8], std::vector<Figure*>& play
 							figure->way_to_opposite_king.push_back({ attack_x, attack_y });
 						}
 					}
-					else if (chessboard[attack_y][attack_x]->figure != nullptr && chessboard[attack_y][attack_x]->figure->GetPlayer() == figure->GetPlayer())
-					{
-						chessboard[attack_y][attack_x]->field_under_attack[figure->GetPlayer()] = true;
-					}
 
-					chessboard[move_y][move_x]->field_under_attack[figure->GetPlayer()] = true;
+					chessboard[attack_y][attack_x]->field_under_attack[figure->GetPlayer()] = true;
 				}
 			}
 
@@ -762,44 +1043,47 @@ void AI::KingMechanic(Field* chessboard[][8], std::vector<Figure*>& player_figur
 			rook_y = 7;
 		}
 
-		for (int move = 2; move < 4; move++)
+		if (!chessboard[king->GetField().y][king->GetField().x]->field_under_attack[opposite_player_figures[0]->GetPlayer()])
 		{
-			int move_x = king->GetField().x;
-			bool next_axis = false;
-
-			while (!next_axis)
+			for (int move = 2; move < 4; move++)
 			{
-				move_x += king->moves_list[move].x;
+				int move_x = king->GetField().x;
+				bool next_axis = false;
 
-				// Checking is there any possible castling
-				if (move_x >= 0 && move_x < 8)
+				while (!next_axis)
 				{
-					if (chessboard[rook_y][move_x]->figure != nullptr)
+					move_x += king->moves_list[move].x;
+
+					// Checking is there any possible castling
+					if (move_x >= 0 && move_x < 8)
 					{
-						if (chessboard[rook_y][move_x]->figure->GetName() == "Rook" && chessboard[rook_y][move_x]->figure->GetPlayer() == king->GetPlayer())
+						if (chessboard[rook_y][move_x]->figure != nullptr)
 						{
-							if (chessboard[rook_y][move_x]->figure->GetField().x == rook_x_1 || chessboard[rook_y][move_x]->figure->GetField().x == rook_x_2)
+							if (chessboard[rook_y][move_x]->figure->GetName() == "Rook" && chessboard[rook_y][move_x]->figure->GetPlayer() == king->GetPlayer())
 							{
-								if (chessboard[rook_y][move_x]->figure->GetField().y == rook_y)
+								if (chessboard[rook_y][move_x]->figure->GetField().x == rook_x_1 || chessboard[rook_y][move_x]->figure->GetField().x == rook_x_2)
 								{
-									king->available_moves.push_back({ move_x, rook_y });
-									next_axis = true;
+									if (chessboard[rook_y][move_x]->figure->GetField().y == rook_y)
+									{
+										king->available_moves.push_back({ move_x, rook_y });
+										next_axis = true;
+									}
 								}
 							}
+							else
+							{
+								next_axis = true;
+							}
 						}
-						else
+						else if (chessboard[rook_y][move_x]->field_under_attack[opposite_player_figures.back()->GetPlayer()])
 						{
 							next_axis = true;
 						}
 					}
-					else if (chessboard[rook_y][move_x]->field_under_attack[opposite_player_figures.back()->GetPlayer()])
+					else
 					{
 						next_axis = true;
 					}
-				}
-				else
-				{
-					next_axis = true;
 				}
 			}
 		}

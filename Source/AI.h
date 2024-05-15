@@ -46,9 +46,12 @@ struct FigureMove
 class AI
 {
 	private:
-		// TEST
 		Field* newChessboard[8][8];
 		Field best_move;
+
+		Text* marked;
+		Text* chooseTopFigures[6];
+		Text* chooseBottomFigures[6];
 
 		// Evaluating moves algorithm
 		int EvaluateBoard(Field* chessboard[][8], Field& move, bool computer_turn);
@@ -57,9 +60,16 @@ class AI
 		void CheckMove(Field* chessboard[][8], Field* newChessboard[][8], Field& move);
 		Field FindBestMove(Field* chessboard[][8], std::vector<Figure*> player_figures, std::vector<Figure*> computer_figures, Figure* player_king, Figure* computer_king, Figure* figure_to_remove, int depth);
 
+		// Show choice when pawn has reached end of chessboard
+		void HasBecomeFigure(Field* chessboard[][8], std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures);
+		void CreateChoiceWindow(int figures_color, int start_field, int field, int field_y, Text* options[6]);
+		void ChoiceBetweenFigures(Field* chessboard[][8], std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, int& selected_figure, bool& running, int& choice);
+		void EventHandlerForChoice(bool& running, int& choice);
+		void UpdateChoice(Text* options[6], int& selected_figure, bool& running);
+		void RenderChoice(Field* chessboard[][8], std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Text* options[6]);
+
 		// Board update features
 		void RemoveFromBoard(Figure* figure_to_remove, std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures);
-		void HasBecomeQueen(std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures);
 		void AttachPositionsToBoard(Field* chessboard[][8], std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures);
 		void CalculateFigureMoves(Field* chessboard[][8], std::vector<Figure*>& player_figures);
 		void MarkFieldsUnderAttack(Field* chessboard[][8], std::vector<Figure*>& player_figures);
@@ -78,4 +88,49 @@ class AI
 
 		Figure* MoveFigure() { return best_move.figure; }
 		Field_ID MoveToField() { return best_move.field_ID; }
+
+		// Textures
+		Texture fields_colors[2] =
+		{
+			{ TextureMenager::LoadTexture("Textures/Chessboard/whiteSqr.png") },
+			{ TextureMenager::LoadTexture("Textures/Chessboard/blackSqr.png") }
+		};
+
+		Texture choiceBorders[2]
+		{
+			{ TextureMenager::LoadTexture("Textures/ChoiceOptions/BorderLeft.png") },
+			{ TextureMenager::LoadTexture("Textures/ChoiceOptions/BorderRight.png") }
+		};
+
+		Texture choiceFiguresUnselected[2][4] =
+		{
+			{
+				{ TextureMenager::LoadTexture("Textures/ChoiceOptions/WhiteFigureQueenUnselected.png") },
+				{ TextureMenager::LoadTexture("Textures/ChoiceOptions/WhiteFigureRookUnselected.png") },
+				{ TextureMenager::LoadTexture("Textures/ChoiceOptions/WhiteFigureKnightUnselected.png") },
+				{ TextureMenager::LoadTexture("Textures/ChoiceOptions/WhiteFigureBishopUnselected.png") }
+			},
+			{
+				{ TextureMenager::LoadTexture("Textures/ChoiceOptions/BlackFigureQueenUnselected.png") },
+				{ TextureMenager::LoadTexture("Textures/ChoiceOptions/BlackFigureRookUnselected.png") },
+				{ TextureMenager::LoadTexture("Textures/ChoiceOptions/BlackFigureKnightUnselected.png") },
+				{ TextureMenager::LoadTexture("Textures/ChoiceOptions/BlackFigureBishopUnselected.png") }
+			}
+		};
+
+		Texture choiceFiguresSelected[2][4] =
+		{
+			{
+				{ TextureMenager::LoadTexture("Textures/ChoiceOptions/WhiteFigureQueenSelected.png") },
+				{ TextureMenager::LoadTexture("Textures/ChoiceOptions/WhiteFigureRookSelected.png") },
+				{ TextureMenager::LoadTexture("Textures/ChoiceOptions/WhiteFigureKnightSelected.png") },
+				{ TextureMenager::LoadTexture("Textures/ChoiceOptions/WhiteFigureBishopSelected.png") }
+			},
+			{
+				{ TextureMenager::LoadTexture("Textures/ChoiceOptions/BlackFigureQueenSelected.png") },
+				{ TextureMenager::LoadTexture("Textures/ChoiceOptions/BlackFigureRookSelected.png") },
+				{ TextureMenager::LoadTexture("Textures/ChoiceOptions/BlackFigureKnightSelected.png") },
+				{ TextureMenager::LoadTexture("Textures/ChoiceOptions/BlackFigureBishopSelected.png") }
+			}
+		};
 };
