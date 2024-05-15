@@ -578,6 +578,10 @@ void AI::EventHandlerForChoice(bool& running, int& choice)
 		GameEngine::mouse_left = true;
 		break;
 
+	case SDL_MOUSEBUTTONUP:
+		GameEngine::mouse_left = false;
+		break;
+
 	case SDL_KEYDOWN:
 		if (event.key.keysym.sym == SDLK_ESCAPE)
 		{
