@@ -86,28 +86,59 @@ void AI::UpdateAI(Field* chessboard[][8], std::vector<Figure*>& player_figures, 
 	best_move = FindBestMove(chessboard, player_figures, computer_figures, player_king, computer_king, figure_to_remove, 2);
 }
 
-int AI::EvaluateBoard(Field* chessboard[][8], Field& move, bool computer_turn)
+int AI::EvaluateBoard(Field* chessboard[][8], Field& move, bool computer_turn, bool& checkmate)
 {
 	int value = 0;
+	double range_of_attacks = 0;
 
 	for (int row = 0; row < 8; row++)
 	{
 		for (int col = 0; col < 8; col++)
 		{
+			// Add value of possible conqered figure
 			if (chessboard[row][col]->figure != nullptr)
 			{
 				if (chessboard[row][col]->figure->GetField() == move.field_ID)
 				{
-					if (chessboard[row][col]->figure->GetPlayer() == HUMAN)
+					if (chessboard[row][col]->figure->GetPlayer() != move.figure->GetPlayer())
 					{
-						return chessboard[row][col]->figure->GetValue();
+						value += chessboard[row][col]->figure->GetValue();
 					}
 				}
+			}
+
+			// Add value depending on escaping from loss of figure
+			if (chessboard[row][col]->figure->GetPlayer() == move.figure->GetPlayer())
+			{
+				if (chessboard[row][col]->figure->GetID() == move.figure->GetID())
+				{
+					int buffor = 0;
+
+					if (move.figure->GetPlayer() == COMPUTER)
+					{
+						buffor++;
+					}
+
+					if (chessboard[row][col]->field_under_attack[buffor])
+					{
+						value += move.figure->GetValue();
+					}
+				}
+			}
+			// Add value depending on range of attacks of figures
+			if (chessboard[row][col]->field_under_attack[move.figure->GetPlayer()])
+			{
+				range_of_attacks += 0.2;
 			}
 		}
 	}
 
-	return 0;
+	if (checkmate)
+	{
+		value++;
+	}
+
+	return value + (int)range_of_attacks;
 }
 
 void AI::EvaluatingMovesAlgorithm(Field* chessboard[][8], Field& base_move, Field& move, std::vector<std::tuple<int, Field>>& moves, std::vector<Figure*> player_figures, std::vector<Figure*> computer_figures, Figure* player_king, Figure* computer_king, Figure* figure_to_remove, bool& computer_turn, bool checkmate, int value, int level, int depth)
@@ -134,13 +165,18 @@ void AI::EvaluatingMovesAlgorithm(Field* chessboard[][8], Field& base_move, Fiel
 			Field move = { field, 0, 0 };
 			move.figure = figure;
 
+			if (!figure->way_to_opposite_king.empty())
+			{
+				checkmate = true;
+			}
+
 			if (figure->GetPlayer() == HUMAN)
 			{
-				move_value -= EvaluateBoard(chessboard, move, computer_turn) + level;
+				move_value -= EvaluateBoard(chessboard, move, computer_turn, checkmate) + level;
 			}
 			else
 			{
-				move_value += EvaluateBoard(chessboard, move, computer_turn) - level;
+				move_value += EvaluateBoard(chessboard, move, computer_turn, checkmate) - level;
 			}
 
 			CheckMove(chessboard, newChessboard, move);
@@ -170,7 +206,12 @@ Field AI::FindBestMove(Field* chessboard[][8], std::vector<Figure*> player_figur
 			Field move = { field, 0, 0 };
 			move.figure = figure;
 
-			int value = EvaluateBoard(chessboard, move, computer_turn);
+			if (!figure->way_to_opposite_king.empty())
+			{
+				checkmate = true;
+			}
+
+			int value = EvaluateBoard(chessboard, move, computer_turn, checkmate);
 
 			CheckMove(chessboard, newChessboard, move);
 
@@ -180,6 +221,7 @@ Field AI::FindBestMove(Field* chessboard[][8], std::vector<Figure*> player_figur
 		}
 	}
 
+	// Find best moves 
 	std::vector<Field> best_moves;
 	Field best_move;
 	int buffor = INT_MIN;
@@ -192,12 +234,8 @@ Field AI::FindBestMove(Field* chessboard[][8], std::vector<Figure*> player_figur
 		}
 	}
 
-	//std::cout << std::endl;
-	//std::cout << "Moves: " << std::endl;
 	for (std::tuple<int, Field> move : moves)
 	{
-		//std::cout << std::endl;
-		//std::cout << "Value: " << std::get<0>(move) << ", Field: " << std::get<1>(move).field_ID.x << ", " << std::get<1>(move).field_ID.y << std::endl;
 		if (std::get<0>(move) >= buffor)
 		{
 			buffor = std::get<0>(move);
