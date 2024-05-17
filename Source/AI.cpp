@@ -83,7 +83,7 @@ void AI::UpdateBoard(Field* chessboard[][8], std::vector<Figure*>& player_figure
 
 void AI::UpdateAI(Field* chessboard[][8], std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Figure* player_king, Figure* computer_king, Figure* figure_to_remove)
 {
-	best_move = FindBestMove(chessboard, player_figures, computer_figures, player_king, computer_king, figure_to_remove, 2);
+	best_move = FindBestMove(chessboard, player_figures, computer_figures, player_king, computer_king, figure_to_remove, 1);
 }
 
 int AI::EvaluateBoard(Field* chessboard[][8], Field& move, bool computer_turn, bool& checkmate)
@@ -97,7 +97,7 @@ int AI::EvaluateBoard(Field* chessboard[][8], Field& move, bool computer_turn, b
 		{
 			if (chessboard[row][col]->figure != nullptr)
 			{
-				// Add value of possible conqered figure
+				// Add value of possible conquered figure
 				if (chessboard[row][col]->figure->GetField() == move.field_ID)
 				{
 					if (chessboard[row][col]->figure->GetPlayer() != move.figure->GetPlayer())
@@ -152,7 +152,7 @@ void AI::EvaluatingMovesAlgorithm(Field* chessboard[][8], Field& base_move, Fiel
 
 	std::vector<Figure*>* figures = &computer_figures;
 
-	if (depth % 2 == 0)
+	if (depth % 2 == 1)
 	{
 		figures = &player_figures;
 	}
@@ -184,7 +184,7 @@ void AI::EvaluatingMovesAlgorithm(Field* chessboard[][8], Field& base_move, Fiel
 
 			UpdateBoard(newChessboard, player_figures, computer_figures, player_king, computer_king, figure_to_remove, checkmate);
 
-			EvaluatingMovesAlgorithm(newChessboard, move, move, moves, player_figures, computer_figures, player_king, computer_king, figure_to_remove, computer_turn, checkmate, move_value, level + 1, depth - 1);
+			EvaluatingMovesAlgorithm(newChessboard, base_move, move, moves, player_figures, computer_figures, player_king, computer_king, figure_to_remove, computer_turn, checkmate, move_value, level + 1, depth - 1);
 		}
 	}
 
