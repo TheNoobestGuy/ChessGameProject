@@ -255,7 +255,9 @@ void Chessboard::AIComponent()
 				move_to.y = Computer->MoveToField().y;
 
 				if (chessboard[move_to.y][move_to.x]->figure != nullptr)
+				{
 					move_to.attacked_figure = chessboard[move_to.y][move_to.x]->figure;
+				}
 			}
 
 			make_move = true;
@@ -614,6 +616,13 @@ void Chessboard::MoveFigure()
 {
 	if (current_figure != nullptr)
 	{
+		// Wait at first turn of AI before move
+		if (first_turn && GameEngine::turn == COMPUTER && GameEngine::enemy == COMPUTER)
+		{
+			std::this_thread::sleep_for(std::chrono::milliseconds(400));
+			first_turn = false;
+		}
+
 		// Send new field ID to figure and check if there is any collision with some other figures
 		bool not_moved = true;
 
@@ -723,6 +732,7 @@ void Chessboard::MoveFigure()
 			// Wait a little before moving figure in AI turn
 			if (GameEngine::turn == COMPUTER && GameEngine::enemy == COMPUTER)
 			{
+				std::this_thread::sleep_for(std::chrono::milliseconds(400));
 				GameEngine::turn == HUMAN;
 			}
 		}

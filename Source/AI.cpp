@@ -83,7 +83,7 @@ void AI::UpdateBoard(Field* chessboard[][8], std::vector<Figure*>& player_figure
 
 void AI::UpdateAI(Field* chessboard[][8], std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Figure* player_king, Figure* computer_king, Figure* figure_to_remove)
 {
-	best_move = FindBestMove(chessboard, player_figures, computer_figures, player_king, computer_king, figure_to_remove, 1);
+	best_move = FindBestMove(chessboard, player_figures, computer_figures, player_king, computer_king, figure_to_remove, 2);
 }
 
 int AI::EvaluateBoard(Field* chessboard[][8], Field& move, bool computer_turn, bool& checkmate)
@@ -152,7 +152,7 @@ void AI::EvaluatingMovesAlgorithm(Field* chessboard[][8], Field& base_move, Fiel
 
 	std::vector<Figure*>* figures = &computer_figures;
 
-	if (depth % 2 == 1)
+	if (depth % 2 == 0)
 	{
 		figures = &player_figures;
 	}
@@ -222,7 +222,6 @@ Field AI::FindBestMove(Field* chessboard[][8], std::vector<Figure*> player_figur
 		}
 	}
 
-	// Find best moves 
 	std::vector<Field> best_moves;
 	Field best_move;
 	int buffor = INT_MIN;
@@ -305,8 +304,6 @@ void AI::RemoveFromBoard(Figure* figure_to_remove, std::vector<Figure*>& player_
 					delete player_figures[figure];
 					player_figures[figure] = nullptr;
 					player_figures.erase(player_figures.begin() + figure);
-
-					figure_to_remove = nullptr;
 					break;
 				}
 			}
@@ -320,13 +317,13 @@ void AI::RemoveFromBoard(Figure* figure_to_remove, std::vector<Figure*>& player_
 					delete computer_figures[figure];
 					computer_figures[figure] = nullptr;
 					computer_figures.erase(computer_figures.begin() + figure);
-
-					figure_to_remove = nullptr;
 					break;
 				}
 			}
 		}
 	}
+
+	figure_to_remove = nullptr;
 }
 
 void AI::HasBecomeFigure(Field* chessboard[][8], std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures)
@@ -353,6 +350,7 @@ void AI::HasBecomeFigure(Field* chessboard[][8], std::vector<Figure*>& player_fi
 			int tempColor = player_figures[figure]->GetColor();
 			Field_ID tempField = player_figures[figure]->GetField();
 
+			chessboard[tempField.y][tempField.x]->figure = nullptr;
 			delete player_figures[figure];
 			player_figures[figure] = nullptr;
 			player_figures.erase(player_figures.begin() + figure);
@@ -406,6 +404,7 @@ void AI::HasBecomeFigure(Field* chessboard[][8], std::vector<Figure*>& player_fi
 			int tempColor = computer_figures[figure]->GetColor();
 			Field_ID tempField = computer_figures[figure]->GetField();
 
+			chessboard[tempField.y][tempField.x]->figure = nullptr;
 			delete computer_figures[figure];
 			computer_figures[figure] = nullptr;
 			computer_figures.erase(computer_figures.begin() + figure);
