@@ -523,8 +523,6 @@ void AI::ChoiceBetweenFigures(Field* chessboard[][8], std::vector<Figure*>& play
 void AI::UpdateChoice(Text* options[6], int& selected_figure, bool& running)
 {
 	// Check for selection from options
-	std::string figure_name;
-
 	for (int select = 1; select < 5; select++)
 	{
 		if (marked == nullptr)
