@@ -95,9 +95,9 @@ int AI::EvaluateBoard(Field* chessboard[][8], Field& move, bool computer_turn, b
 	{
 		for (int col = 0; col < 8; col++)
 		{
-			// Add value of possible conqered figure
 			if (chessboard[row][col]->figure != nullptr)
 			{
+				// Add value of possible conqered figure
 				if (chessboard[row][col]->figure->GetField() == move.field_ID)
 				{
 					if (chessboard[row][col]->figure->GetPlayer() != move.figure->GetPlayer())
@@ -105,26 +105,27 @@ int AI::EvaluateBoard(Field* chessboard[][8], Field& move, bool computer_turn, b
 						value += chessboard[row][col]->figure->GetValue();
 					}
 				}
-			}
 
-			// Add value depending on escaping from loss of figure
-			if (chessboard[row][col]->figure->GetPlayer() == move.figure->GetPlayer())
-			{
-				if (chessboard[row][col]->figure->GetID() == move.figure->GetID())
+				// Add value depending on escaping from loss of figure
+				else if (chessboard[row][col]->figure->GetPlayer() == move.figure->GetPlayer())
 				{
-					int buffor = 0;
-
-					if (move.figure->GetPlayer() == COMPUTER)
+					if (chessboard[row][col]->figure->GetID() == move.figure->GetID())
 					{
-						buffor++;
-					}
+						int player = COMPUTER;
 
-					if (chessboard[row][col]->field_under_attack[buffor])
-					{
-						value += move.figure->GetValue();
+						if (move.figure->GetPlayer() == COMPUTER)
+						{
+							player = HUMAN;
+						}
+
+						if (chessboard[row][col]->field_under_attack[player])
+						{
+							value += move.figure->GetValue();
+						}
 					}
 				}
 			}
+
 			// Add value depending on range of attacks of figures
 			if (chessboard[row][col]->field_under_attack[move.figure->GetPlayer()])
 			{
