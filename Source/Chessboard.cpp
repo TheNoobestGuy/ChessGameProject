@@ -614,6 +614,8 @@ void Chessboard::PickedUpDestination()
 
 void Chessboard::MoveFigure()
 {
+	figure_to_remove = nullptr;
+
 	if (current_figure != nullptr)
 	{
 		// Wait at first turn of AI before move

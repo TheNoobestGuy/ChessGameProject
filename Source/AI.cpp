@@ -79,6 +79,10 @@ void AI::UpdateBoard(Field* chessboard[][8], std::vector<Figure*>& player_figure
 	// Remove unavailable moves
 	RemoveUnavailableMoves(player_figures);
 	RemoveUnavailableMoves(computer_figures);
+
+	player_king = nullptr;
+	computer_king = nullptr;
+	figure_to_remove = nullptr;
 }
 
 void AI::UpdateAI(Field* chessboard[][8], std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Figure* player_king, Figure* computer_king, Figure* figure_to_remove)
@@ -295,6 +299,7 @@ void AI::RemoveFromBoard(Figure* figure_to_remove, std::vector<Figure*>& player_
 {
 	if (figure_to_remove != nullptr)
 	{
+		std::cout << figure_to_remove->GetID() << std::endl;
 		if (figure_to_remove->GetPlayer() == HUMAN)
 		{
 			for (int figure = 0; figure < player_figures.size(); figure++)
@@ -522,9 +527,6 @@ void AI::ChoiceBetweenFigures(Field* chessboard[][8], std::vector<Figure*>& play
 
 void AI::UpdateChoice(Text* options[6], int& selected_figure, bool& running)
 {
-	// Check for selection from options
-	std::string figure_name;
-
 	for (int select = 1; select < 5; select++)
 	{
 		if (marked == nullptr)
