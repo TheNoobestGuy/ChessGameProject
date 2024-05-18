@@ -150,7 +150,6 @@ void AI::EvaluatingMovesAlgorithm(Field* chessboard[][8], Field& base_move, Fiel
 {
 	if (depth == 0)
 	{
-		moves.push_back({ value, base_move });
 		return;
 	}
 
@@ -175,20 +174,43 @@ void AI::EvaluatingMovesAlgorithm(Field* chessboard[][8], Field& base_move, Fiel
 				checkmate = true;
 			}
 
-			int buffor = EvaluateBoard(chessboard, move, computer_turn, checkmate) + level;
+			int buffor = EvaluateBoard(chessboard, move, computer_turn, checkmate);
 
 			if (figure->GetPlayer() == HUMAN)
 			{
-				move_value -= buffor;
+				move_value -= buffor + level;
 			}
 			else
 			{
-				move_value += buffor;
+				move_value += buffor - level;
 			}
 			
 			if (depth % level == 1)
 			{
-				moves.push_back({ move_value, base_move });
+				bool founded = false;
+				for (std::tuple<int, Field> move : moves)
+				{
+					if (base_move.figure->GetID() == std::get<1>(move).figure->GetID())
+					{
+						if (base_move.field_ID == std::get<1>(move).field_ID)
+						{
+							if (move_value > std::get<0>(move))
+							{
+								std::get<0>(move) = move_value;
+							}
+
+							founded = true;
+							break;
+						}
+					}
+				}
+
+				if (!founded)
+				{
+					moves.push_back({ move_value, base_move });
+				}
+
+				depth--;
 				return;
 			}
 			else
@@ -236,6 +258,7 @@ Field AI::FindBestMove(Field* chessboard[][8], std::vector<Figure*> player_figur
 		}
 	}
 
+	// Find best moves
 	std::vector<Field> best_moves;
 	Field best_move;
 	int buffor = INT_MIN;
@@ -254,7 +277,6 @@ Field AI::FindBestMove(Field* chessboard[][8], std::vector<Figure*> player_figur
 		{
 			buffor = std::get<0>(move);
 			best_move = std::get<1>(move);
-
 			best_moves.push_back(best_move);
 		}
 	}
@@ -262,12 +284,32 @@ Field AI::FindBestMove(Field* chessboard[][8], std::vector<Figure*> player_figur
 	// Generate random value from given range for moves
 	std::random_device rd;
 	std::mt19937 gen(rd());
+	std::shuffle(best_moves.begin(), best_moves.end(), gen);
 
-	std::uniform_int_distribution<> distribution(0, best_moves.size()-1);
+	std::vector<Field> final_moves;
+
+	int pawn_counter = 0;
+	for (Field move : best_moves)
+	{
+		if (move.figure->GetName() == "Pawn")
+		{
+			pawn_counter++;
+
+			if (pawn_counter >= 2)
+			{
+				pawn_counter = 0;
+				continue;
+			}
+		}
+
+		final_moves.push_back(move);
+	}
+
+	std::uniform_int_distribution<> distribution(0, final_moves.size()-1);
 	
 	int random = distribution(gen);
 
-	best_move = best_moves[random];
+	best_move = final_moves[random];
 
 	return best_move;
 }
