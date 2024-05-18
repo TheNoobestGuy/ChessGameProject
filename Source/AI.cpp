@@ -188,7 +188,7 @@ void AI::EvaluatingMovesAlgorithm(Field* chessboard[][8], Field& base_move, Fiel
 			
 			if (depth % level == 1)
 			{
-				moves.push_back({ value + move_value, base_move });
+				moves.push_back({ move_value, base_move });
 				return;
 			}
 			else
