@@ -87,7 +87,7 @@ void AI::UpdateBoard(Field* chessboard[][8], std::vector<Figure*>& player_figure
 
 void AI::UpdateAI(Field* chessboard[][8], std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Figure* player_king, Figure* computer_king, Figure* figure_to_remove)
 {
-	best_move = FindBestMove(chessboard, player_figures, computer_figures, player_king, computer_king, figure_to_remove, 1);
+	best_move = FindBestMove(chessboard, player_figures, computer_figures, player_king, computer_king, figure_to_remove, 3);
 }
 
 int AI::EvaluateBoard(Field* chessboard[][8], Field& move, bool computer_turn, bool& checkmate)
@@ -175,20 +175,30 @@ void AI::EvaluatingMovesAlgorithm(Field* chessboard[][8], Field& base_move, Fiel
 				checkmate = true;
 			}
 
+			int buffor = EvaluateBoard(chessboard, move, computer_turn, checkmate) + level;
+
 			if (figure->GetPlayer() == HUMAN)
 			{
-				move_value -= EvaluateBoard(chessboard, move, computer_turn, checkmate) + level;
+				move_value -= buffor;
 			}
 			else
 			{
-				move_value += EvaluateBoard(chessboard, move, computer_turn, checkmate) - level;
+				move_value += buffor;
 			}
+			
+			if (depth % level == 1)
+			{
+				moves.push_back({ value + move_value, base_move });
+				return;
+			}
+			else
+			{
+				CheckMove(chessboard, newChessboard, move);
 
-			CheckMove(chessboard, newChessboard, move);
+				UpdateBoard(newChessboard, player_figures, computer_figures, player_king, computer_king, figure_to_remove, checkmate);
 
-			UpdateBoard(newChessboard, player_figures, computer_figures, player_king, computer_king, figure_to_remove, checkmate);
-
-			EvaluatingMovesAlgorithm(newChessboard, base_move, move, moves, player_figures, computer_figures, player_king, computer_king, figure_to_remove, computer_turn, checkmate, move_value, level + 1, depth - 1);
+				EvaluatingMovesAlgorithm(newChessboard, base_move, move, moves, player_figures, computer_figures, player_king, computer_king, figure_to_remove, computer_turn, checkmate, move_value, level + 1, depth - 1);
+			}
 		}
 	}
 
@@ -299,7 +309,6 @@ void AI::RemoveFromBoard(Figure* figure_to_remove, std::vector<Figure*>& player_
 {
 	if (figure_to_remove != nullptr)
 	{
-		std::cout << figure_to_remove->GetID() << std::endl;
 		if (figure_to_remove->GetPlayer() == HUMAN)
 		{
 			for (int figure = 0; figure < player_figures.size(); figure++)
