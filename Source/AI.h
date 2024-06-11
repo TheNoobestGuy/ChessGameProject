@@ -54,8 +54,8 @@ class AI
 		Text* chooseBottomFigures[6];
 
 		// Evaluating moves algorithm
-		int EvaluateBoard(Field* chessboard[][8], Field& move, bool computer_turn, bool& checkmate);
-		void EvaluatingMovesAlgorithm(Field* chessboard[][8], Field& base_move, Field& move, std::vector<std::tuple<int, Field>>& moves, std::vector<Figure*> player_figures, std::vector<Figure*> computer_figures, Figure* player_king, Figure* computer_king, Figure* figure_to_remove, bool& computer_turn, bool checkmate, int value, int level, int depth);
+		int EvaluateBoard(Field* chessboard[][8], Field& move, bool& checkmate);
+		void EvaluatingMovesAlgorithm(Field* chessboard[][8], Field& base_move, Field& move, std::vector<std::tuple<int, Field>>& moves, std::vector<Figure*> player_figures, std::vector<Figure*> computer_figures, Figure* player_king, Figure* computer_king, Figure* figure_to_remove, bool checkmate, int value, int depth);
 
 		void CheckMove(Field* chessboard[][8], Field* newChessboard[][8], Field& move);
 		Field FindBestMove(Field* chessboard[][8], std::vector<Figure*> player_figures, std::vector<Figure*> computer_figures, Figure* player_king, Figure* computer_king, Figure* figure_to_remove, int depth);
