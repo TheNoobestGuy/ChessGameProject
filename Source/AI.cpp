@@ -26,14 +26,6 @@ AI::AI()
 
 AI::~AI()
 {
-	for (int row = 0; row < 8; row++)
-	{
-		for (int col = 0; col < 8; col++)
-		{
-			newChessboard[row][col] = nullptr;
-		}
-	}
-
 	for (int i = 0; i < 6; i++)
 	{
 		delete chooseTopFigures[i];
@@ -85,14 +77,121 @@ void AI::UpdateBoard(Field* chessboard[][8], std::vector<Figure*>& player_figure
 	figure_to_remove = nullptr;
 }
 
-void AI::UpdateAI(Field* chessboard[][8], std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Figure* player_king, Figure* computer_king, Figure* figure_to_remove)
+void AI::UpdateAI(Field* chessboard[][8], std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Figure* figure_to_remove)
 {
-	best_move = FindBestMove(chessboard, player_figures, computer_figures, player_king, computer_king, figure_to_remove, 2);
+	best_move = FindBestMove(chessboard, 2, player_figures, computer_figures, figure_to_remove);
 }
 
-int AI::EvaluateBoard(Field* chessboard[][8], Field& move, bool& checkmate)
+int AI::MiniMaxAlphaBetaPrunning(Field* chessboard[][8], std::vector<std::tuple<Field, int>>& moves, int depth, int alpha, int beta, int maximazing_player, std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Figure* figure_to_remove)
 {
-	int value = 0;
+	if (depth == 0)
+		return EvaluateBoard(chessboard, maximazing_player);
+
+	bool checkmate = false;
+
+	if (maximazing_player == COMPUTER)
+	{
+		int max_eval = INT_MIN;
+		for (Figure* figure : computer_figures)
+		{
+			bool first_move = true;
+			Field_ID base_move;
+
+			for (Field_ID move : figure->available_moves)
+			{
+				if (first_move)
+				{
+					Field base_field_of_move = { move, 64, 0 };
+					moves.push_back({ base_field_of_move, 0 });
+					std::get<0>(moves.back()).figure = figure;
+					base_move = move;
+					first_move = false;
+				}
+
+				Field_ID previous_position = figure->GetField();
+				Field field_of_move = { move, 64, 0 };
+				field_of_move.figure = figure;
+
+				figure->ChangePosition(move);
+
+				Field* newChessboard[8][8];
+				CreateNewChessboard(chessboard, newChessboard, field_of_move);
+
+				std::vector<Figure*> player_figures_update;
+				std::vector<Figure*> computer_figures_update;
+				MakeCopyOfFiguresForCalculatingMoves(player_figures, computer_figures, player_figures_update, computer_figures_update);
+
+				UpdateBoard(newChessboard, player_figures_update, computer_figures_update, player_king_update, computer_king_update, figure_to_remove, checkmate);
+
+				int current_eval = MiniMaxAlphaBetaPrunning(newChessboard, moves, depth - 1, alpha, beta, HUMAN, player_figures_update, computer_figures_update, figure_to_remove);
+
+				figure->ChangePosition(previous_position);
+				//DeleteCreatedChessboard(newChessboard);
+				//DeleteFigures(player_figures_update, computer_figures_update);
+
+				if (current_eval > max_eval)
+				{
+					max_eval = current_eval;
+
+					for (std::tuple<Field, int> field : moves)
+					{
+						if (std::get<0>(field).field_ID == base_move)
+						{
+							if (std::get<1>(field) < current_eval)
+							{
+								std::get<1>(field) = current_eval;
+							}
+						}
+					}
+				}
+			}
+		}
+
+		return max_eval;
+	}
+	else
+	{
+		int min_eval = INT_MAX;
+		for (Figure* figure : player_figures)
+		{
+			for (Field_ID move : figure->available_moves)
+			{
+				Field_ID previous_position = figure->GetField();
+				Field field_of_move = { move, 64, 0 };
+				field_of_move.figure = figure;
+
+				figure->ChangePosition(move);
+
+				Field* newChessboard[8][8];
+				CreateNewChessboard(chessboard, newChessboard, field_of_move);
+
+				std::vector<Figure*> player_figures_update;
+				std::vector<Figure*> computer_figures_update;
+				MakeCopyOfFiguresForCalculatingMoves(player_figures, computer_figures, player_figures_update, computer_figures_update);
+
+				UpdateBoard(newChessboard, player_figures_update, computer_figures_update, player_king_update, computer_king_update, figure_to_remove, checkmate);
+
+				int current_eval = MiniMaxAlphaBetaPrunning(newChessboard, moves, depth - 1, alpha, beta, HUMAN, player_figures_update, computer_figures_update, figure_to_remove);
+
+				figure->ChangePosition(previous_position);
+				//DeleteCreatedChessboard(newChessboard);
+				//DeleteFigures(player_figures_update, computer_figures_update);
+
+				if (current_eval < min_eval)
+				{
+					min_eval = current_eval;
+				}
+			}
+		}
+
+		return min_eval;
+	}
+}
+
+int AI::EvaluateBoard(Field* chessboard[][8], int maximazing_player)
+{	
+	int player_value = 0;
+	int computer_value = 0;
 
 	for (int row = 0; row < 8; row++)
 	{
@@ -100,197 +199,77 @@ int AI::EvaluateBoard(Field* chessboard[][8], Field& move, bool& checkmate)
 		{
 			if (chessboard[row][col]->figure != nullptr)
 			{
-				// Add value of possible conquered figure
-				if (chessboard[row][col]->figure->GetField() == move.field_ID)
-				{
-					if (chessboard[row][col]->figure->GetPlayer() != move.figure->GetPlayer())
-					{
-						value = chessboard[row][col]->figure->GetValue();
-						break;
-					}
-				}
+				if (chessboard[row][col]->figure->GetPlayer() == COMPUTER)
+					computer_value += chessboard[row][col]->figure->GetValue();
+				else
+					player_value += chessboard[row][col]->figure->GetValue();
 			}
 		}
 	}
 
-	if (checkmate)
-	{
-		value++;
-	}
-
-	return value;
+	if (maximazing_player == HUMAN)
+		return computer_value - player_value;
+	else
+		return player_value - computer_value;
 }
 
-void AI::EvaluatingMovesAlgorithm(Field* chessboard[][8], Field& base_move, Field& move, std::vector<std::tuple<int, Field>>& moves, std::vector<Figure*> player_figures, std::vector<Figure*> computer_figures, Figure* player_king, Figure* computer_king, Figure* figure_to_remove, bool checkmate, int value, int depth)
+Field AI::FindBestMove(Field* chessboard[][8], int depth, std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Figure* figure_to_remove)
 {
-	if (depth == 0)
-	{
-		bool founded = false;
-		for (std::tuple<int, Field> move : moves)
-		{
-			if (base_move.figure->GetID() == std::get<1>(move).figure->GetID())
-			{
-				if (base_move.field_ID == std::get<1>(move).field_ID)
-				{
-					if (value > std::get<0>(move))
-					{
-						std::get<0>(move) = value;
-					}
+	std::vector<std::tuple<Field, int>> moves;
+	bool checkmate = false;
 
-					founded = true;
-					break;
-				}
-			}
-		}
-
-		if (!founded)
-		{
-			moves.push_back({ value, base_move });
-		}
-
-		return;
-	}
-
-	std::vector<Figure*>* figures = &computer_figures;
-
-	if (depth % 2 == 0)
-	{
-		figures = &player_figures;
-	}
-
-	Field baseChessboard[8][8];
-	
-	for (int row = 0; row < 8; row++)
-	{
-		for (int col = 0; col < 8; col++)
-		{
-			baseChessboard[row][col] = *chessboard[row][col];
-		}
-	}
-
-	Field* baseChessboardPointer[8][8];
-
-	for (int row = 0; row < 8; row++)
-	{
-		for (int col = 0; col < 8; col++)
-		{
-			baseChessboardPointer[row][col] = &baseChessboard[row][col];
-		}
-	}
-
-	for (Figure* figure : *figures)
-	{
-		for (Field_ID field : figure->available_moves)
-		{
-			int move_value = value;
-
-			Field move = { field, 0, 0 };
-			move.figure = figure;
-
-			if (!figure->way_to_opposite_king.empty())
-			{
-				checkmate = true;
-			}
-
-			int buffor = EvaluateBoard(chessboard, move, checkmate);
-
-			if (figure->GetPlayer() == HUMAN)
-			{
-				move_value -= buffor;
-			}
-			else
-			{
-				move_value += buffor;
-			}
-			
-			if (depth != 1)
-			{
-				CheckMove(baseChessboardPointer, newChessboard, move);
-
-				std::vector<Figure*> player_figures_update = player_figures;
-				std::vector<Figure*> computer_figures_update = computer_figures;
-
-				UpdateBoard(newChessboard, player_figures_update, computer_figures_update, player_king, computer_king, figure_to_remove, checkmate);
-			}
-
-			EvaluatingMovesAlgorithm(newChessboard, base_move, move, moves, player_figures, computer_figures, player_king, computer_king, figure_to_remove, checkmate, move_value, depth - 1);
-		}
-	}
-
-	figures = nullptr;
-}
-
-Field AI::FindBestMove(Field* chessboard[][8], std::vector<Figure*> player_figures, std::vector<Figure*> computer_figures, Figure* player_king, Figure* computer_king, Figure* figure_to_remove, int depth)
-{
-	std::vector<std::tuple<int, Field>> moves;
-
-	Field baseChessboard[8][8];
-
-	for (int row = 0; row < 8; row++)
-	{
-		for (int col = 0; col < 8; col++)
-		{
-			baseChessboard[row][col] = *chessboard[row][col];
-		}
-	}
-
-	Field* baseChessboardPointer[8][8];
-
-	for (int row = 0; row < 8; row++)
-	{
-		for (int col = 0; col < 8; col++)
-		{
-			baseChessboardPointer[row][col] = &baseChessboard[row][col];
-		}
-	}
-
+	int max_eval = INT_MIN;
 	for (Figure* figure : computer_figures)
 	{
-		for (Field_ID field : figure->available_moves)
+		for (Field_ID move : figure->available_moves)
 		{
-			bool checkmate = false;
+			Field base_field_of_move = { move, 64, 0 };
+			moves.push_back({ base_field_of_move, 0 });
+			std::get<0>(moves.back()).figure = figure;
 
-			Field move = { field, 0, 0 };
-			move.figure = figure;
+			Field_ID previous_position = figure->GetField();
+			Field field_of_move = { move, 64, 0 };
+			field_of_move.figure = figure;
 
-			if (!figure->way_to_opposite_king.empty())
-			{
-				checkmate = true;
-			}
+			figure->ChangePosition(move);
 
-			int value = EvaluateBoard(baseChessboardPointer, move, checkmate);
+			Field* newChessboard[8][8];
+			CreateNewChessboard(chessboard, newChessboard, field_of_move);
 
-			CheckMove(baseChessboardPointer, newChessboard, move);
+			std::vector<Figure*> player_figures_update;
+			std::vector<Figure*> computer_figures_update;
+			MakeCopyOfFiguresForCalculatingMoves(player_figures, computer_figures, player_figures_update, computer_figures_update);
 
-			std::vector<Figure*> player_figures_update = player_figures;
-			std::vector<Figure*> computer_figures_update = computer_figures;
+			UpdateBoard(newChessboard, player_figures_update, computer_figures_update, player_king_update, computer_king_update, figure_to_remove, checkmate);
 
-			UpdateBoard(newChessboard, player_figures_update, computer_figures_update, player_king, computer_king, figure_to_remove, checkmate);
+			int current_eval = MiniMaxAlphaBetaPrunning(newChessboard, moves, depth - 1, 0, 0, HUMAN, player_figures_update, computer_figures_update, figure_to_remove);
 
-			EvaluatingMovesAlgorithm(newChessboard, move, move, moves, player_figures, computer_figures, player_king, computer_king, figure_to_remove, checkmate, value, depth);
+			figure->ChangePosition(previous_position);
+			//DeleteCreatedChessboard(newChessboard);
+			//DeleteFigures(player_figures_update, computer_figures_update);
+
+			std::get<1>(moves.back()) = current_eval;
 		}
 	}
-
+	
 	// Find best moves
 	std::vector<Field> best_moves;
 	Field best_move;
 	int buffor = INT_MIN;
 
-	for (std::tuple<int, Field> move : moves)
+	for (std::tuple<Field, int> move : moves)
 	{
-		if (std::get<0>(move) > buffor)
+		if (std::get<1>(move) > buffor)
 		{
-			buffor = std::get<0>(move);
+			buffor = std::get<1>(move);
 		}
 	}
 
-	for (std::tuple<int, Field> move : moves)
+	for (std::tuple<Field, int> move : moves)
 	{
-		if (std::get<0>(move) >= buffor)
+		if (std::get<1>(move) >= buffor)
 		{
-			buffor = std::get<0>(move);
-			best_move = std::get<1>(move);
-			best_moves.push_back(best_move);
+			best_moves.push_back(std::get<0>(move));
 		}
 	}
 
@@ -327,36 +306,133 @@ Field AI::FindBestMove(Field* chessboard[][8], std::vector<Figure*> player_figur
 	return best_move;
 }
 
-void AI::CheckMove(Field* chessboard[][8], Field* newChessboard[][8], Field& move)
+void AI::CreateNewChessboard(Field* previousChessboard[][8], Field* newChessboard[][8], Field& move)
 {
 	for (int row = 0; row < 8; row++)
 	{
 		for (int col = 0; col < 8; col++)
 		{
-			newChessboard[row][col] = chessboard[row][col];
+			newChessboard[row][col] = new Field{ { col, row }, 64, 0 };
 		}
 	}
-	
+
 	for (int row = 0; row < 8; row++)
 	{
 		for (int col = 0; col < 8; col++)
 		{
-			if (newChessboard[row][col]->figure != nullptr)
+			newChessboard[row][col]->en_passant = previousChessboard[row][col]->en_passant;
+			newChessboard[row][col]->field_under_attack[HUMAN] = previousChessboard[row][col]->field_under_attack[HUMAN];
+			newChessboard[row][col]->field_under_attack[COMPUTER] = previousChessboard[row][col]->field_under_attack[COMPUTER];
+
+			if (previousChessboard[row][col]->figure != nullptr)
 			{
-				if (newChessboard[row][col]->figure->GetID() == move.figure->GetID())
+				if (previousChessboard[row][col]->figure->GetID() == move.figure->GetID())
 				{
-					if (newChessboard[row][col]->figure->GetPlayer() == move.figure->GetPlayer())
+					if (previousChessboard[row][col]->figure->GetPlayer() == move.figure->GetPlayer())
 					{
 						newChessboard[row][col]->figure = nullptr;
 					}
 				}
+				else if (previousChessboard[row][col]->field_ID == move.field_ID)
+				{
+					newChessboard[row][col]->figure = move.figure;
+				}
+				else
+				{
+					newChessboard[row][col]->figure = previousChessboard[row][col]->figure;
+				}
 			}
-
-			if (newChessboard[row][col]->field_ID == move.field_ID)
+			else if(previousChessboard[row][col]->field_ID == move.field_ID)
 			{
 				newChessboard[row][col]->figure = move.figure;
 			}
+			else
+			{
+				newChessboard[row][col]->figure = nullptr;
+			}
 		}
+	}
+}
+
+void AI::DeleteCreatedChessboard(Field* chessboard[][8])
+{
+	for (int row = 0; row < 8; row++)
+	{
+		for (int col = 0; col < 8; col++)
+		{
+			delete chessboard[row][col];
+			chessboard[row][col] = nullptr;
+		}
+	}
+}
+
+void AI::MakeCopyOfFiguresForCalculatingMoves(std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, std::vector<Figure*>& player_figures_update, std::vector<Figure*>& computer_figures_update)
+{
+	for (Figure* figure : computer_figures)
+	{
+		if (figure->GetName() == "Pawn")
+			computer_figures_update.push_back(new Pawn(figure->GetName(), figure->GetID(), figure->GetField(), figure->GetColor(), 64, figure->GetValue()));
+		else if (figure->GetName() == "Knight")
+			computer_figures_update.push_back(new Knight(figure->GetName(), figure->GetID(), figure->GetField(), figure->GetColor(), 64, figure->GetValue()));
+		else if (figure->GetName() == "Bishop")
+			computer_figures_update.push_back(new Bishop(figure->GetName(), figure->GetID(), figure->GetField(), figure->GetColor(), 64, figure->GetValue()));
+		else if (figure->GetName() == "Rook")
+			computer_figures_update.push_back(new Rook(figure->GetName(), figure->GetID(), figure->GetField(), figure->GetColor(), 64, figure->GetValue()));
+		else if (figure->GetName() == "Queen")
+			computer_figures_update.push_back(new Queen(figure->GetName(), figure->GetID(), figure->GetField(), figure->GetColor(), 64, figure->GetValue()));
+		else if (figure->GetName() == "King")
+		{
+			computer_figures_update.push_back(new King(figure->GetName(), figure->GetID(), figure->GetField(), figure->GetColor(), 64, figure->GetValue()));
+			computer_king_update = figure;
+		}
+		else
+		{
+			continue;
+		}
+
+		computer_figures_update.back()->SetPlayer(COMPUTER);
+		computer_figures_update.back()->PossibleMoves();
+	}
+
+	for (Figure* figure : player_figures)
+	{
+		if (figure->GetName() == "Pawn")
+			player_figures_update.push_back(new Pawn(figure->GetName(), figure->GetID(), figure->GetField(), figure->GetColor(), 64, figure->GetValue()));
+		else if (figure->GetName() == "Knight")
+			player_figures_update.push_back(new Knight(figure->GetName(), figure->GetID(), figure->GetField(), figure->GetColor(), 64, figure->GetValue()));
+		else if (figure->GetName() == "Bishop")
+			player_figures_update.push_back(new Bishop(figure->GetName(), figure->GetID(), figure->GetField(), figure->GetColor(), 64, figure->GetValue()));
+		else if (figure->GetName() == "Rook")
+			player_figures_update.push_back(new Rook(figure->GetName(), figure->GetID(), figure->GetField(), figure->GetColor(), 64, figure->GetValue()));
+		else if (figure->GetName() == "Queen")
+			player_figures_update.push_back(new Queen(figure->GetName(), figure->GetID(), figure->GetField(), figure->GetColor(), 64, figure->GetValue()));
+		else if (figure->GetName() == "King")
+		{
+			player_figures_update.push_back(new King(figure->GetName(), figure->GetID(), figure->GetField(), figure->GetColor(), 64, figure->GetValue()));
+			player_king_update = figure;
+		}
+		else
+		{
+			continue;
+		}
+
+		player_figures_update.back()->SetPlayer(HUMAN);
+		player_figures_update.back()->PossibleMoves();
+	}
+}
+
+void AI::DeleteFigures(std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures)
+{
+	for (Figure* figure : player_figures)
+	{
+		delete figure;
+		figure = nullptr;
+	}
+
+	for (Figure* figure : computer_figures)
+	{
+		delete figure;
+		figure = nullptr;
 	}
 }
 
@@ -748,10 +824,6 @@ void AI::CalculateFigureMoves(Field* chessboard[][8], std::vector<Figure*>& play
 						{
 							figure->available_moves.push_back({ move_x, move_y });
 						}
-						else
-						{
-							chessboard[move_y][move_x]->field_under_attack[figure->GetPlayer()] = true;
-						}
 					}
 					else
 					{
@@ -969,8 +1041,6 @@ void AI::CalculateFigureMoves(Field* chessboard[][8], std::vector<Figure*>& play
 		}
 	}
 }
-
-
 
 void AI::MarkFieldsUnderAttack(Field* chessboard[][8], std::vector<Figure*>& player_figures)
 {
