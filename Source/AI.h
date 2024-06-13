@@ -48,30 +48,30 @@ class AI
 	private:
 		std::vector<Field> player_moves_list;
 		std::vector<Field> computer_moves_list;
-
+	
 		// ????
 		Figure* player_king_update;
 		Figure* computer_king_update;
 		//
-
+	
 		Field best_move;
-
+	
 		Text* marked;
 		Text* chooseTopFigures[6];
 		Text* chooseBottomFigures[6];
-
+	
 		// Evaluating moves algorithm
-		int MiniMaxAlphaBetaPrunning(Field* chessboard[][8], std::vector<std::tuple<Field, int>>& moves, int depth, int alpha, int beta, int maximazing_player, std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Figure* figure_to_remove);
+		int MiniMaxAlphaBetaPrunning(Field* chessboard[][8], std::vector<std::tuple<Field, int>>& moves, int depth, int alpha, int beta, int maximazing_player, std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Figure*& player_king, Figure*& computer_king, Figure*& figure_to_remove);
 		int EvaluateBoard(Field* chessboard[][8], int maximazing_player);
-
-		void MakeCopyOfFiguresForCalculatingMoves(std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, std::vector<Figure*>& player_figures_update, std::vector<Figure*>& computer_figures_update);
-		void DeleteFigures(std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures);
-
+	
+		void MakeCopyOfFiguresForCalculatingMoves(std::vector<Figure*>& player_figures, std::vector<Figure*>& player_figures_update, Figure*& player_king_update);
+		void DeleteFigures(std::vector<Figure*>& player_figures);
+	
 		void CreateNewChessboard(Field* previousChessboard[][8], Field* newChessboard[][8], Field& move);
 		void DeleteCreatedChessboard(Field* chessboard[][8]);
-
-		Field FindBestMove(Field* chessboard[][8], int depth, std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Figure* figure_to_remove);
-
+	
+		Field FindBestMove(Field* chessboard[][8], int depth, std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Figure*& player_king, Figure*& computer_king, Figure*& figure_to_remove);
+	
 		// Show choice when pawn has reached end of chessboard
 		void HasBecomeFigure(Field* chessboard[][8], std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures);
 		void CreateChoiceWindow(int figures_color, int start_field, int field, int field_y, Text* options[6]);
@@ -79,7 +79,7 @@ class AI
 		void EventHandlerForChoice(bool& running, int& choice);
 		void UpdateChoice(Text* options[6], int& selected_figure, bool& running);
 		void RenderChoice(Field* chessboard[][8], std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Text* options[6]);
-
+	
 		// Board update features
 		void RemoveFromBoard(Figure* figure_to_remove, std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures);
 		void AttachPositionsToBoard(Field* chessboard[][8], std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures);
@@ -89,31 +89,31 @@ class AI
 		void ApplyEntangledMoves(std::vector<Figure*>& player_figures);
 		void KingMechanic(Field* chessboard[][8], std::vector<Figure*>& player_figures, std::vector<Figure*>& opposite_player_figures, Figure* king, bool& checkmate);
 		void RemoveUnavailableMoves(std::vector<Figure*>& player_figures);
-
+	
 	public:
 		AI();
 		~AI();
-
+	
 		// AI update
-		void UpdateAI(Field* chessboard[][8], std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Figure* figure_to_remove);
+		void UpdateAI(Field* chessboard[][8], std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Figure* player_king, Figure* computer_king, Figure* figure_to_remove);
 		void UpdateBoard(Field* chessboard[][8], std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Figure* player_king, Figure* computer_king, Figure* figure_to_remove, bool& checkmate);
-
+	
 		Figure* MoveFigure() { return best_move.figure; }
 		Field_ID MoveToField() { return best_move.field_ID; }
-
+	
 		// Textures
 		Texture fields_colors[2] =
 		{
 			{ TextureMenager::LoadTexture("Textures/Chessboard/whiteSqr.png") },
 			{ TextureMenager::LoadTexture("Textures/Chessboard/blackSqr.png") }
 		};
-
+	
 		Texture choiceBorders[2]
 		{
 			{ TextureMenager::LoadTexture("Textures/ChoiceOptions/BorderLeft.png") },
 			{ TextureMenager::LoadTexture("Textures/ChoiceOptions/BorderRight.png") }
 		};
-
+	
 		Texture choiceFiguresUnselected[2][4] =
 		{
 			{
@@ -129,7 +129,7 @@ class AI
 				{ TextureMenager::LoadTexture("Textures/ChoiceOptions/BlackFigureBishopUnselected.png") }
 			}
 		};
-
+	
 		Texture choiceFiguresSelected[2][4] =
 		{
 			{

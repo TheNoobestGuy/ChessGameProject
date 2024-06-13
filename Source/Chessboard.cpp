@@ -245,7 +245,7 @@ void Chessboard::AIComponent()
 	{
 		if (GameEngine::turn == COMPUTER && !end_game)
 		{
-			Computer->UpdateAI(chessboard, player_figures, computer_figures, figure_to_remove);
+			Computer->UpdateAI(chessboard, player_figures, computer_figures, player_king, computer_king, figure_to_remove);
 
 			current_figure = Computer->MoveFigure();
 
