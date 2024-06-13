@@ -169,7 +169,8 @@ int AI::MiniMaxAlphaBetaPrunning(Field* chessboard[][8], std::vector<std::tuple<
 
 				// Evaluate move
 				int current_eval = MiniMaxAlphaBetaPrunning(newChessboard, moves, depth - 1, alpha, beta, COMPUTER, checkmate, player_figures_update, computer_figures, player_king_update, computer_king, figure_to_remove);
-				current_eval += EvaluateMove(chessboard, field_of_move, player_figures_update, HUMAN);
+
+				current_eval -= EvaluateMove(chessboard, field_of_move, player_figures_update, HUMAN);
 
 				figure->ChangePositionComputer(previous_position);
 
@@ -260,9 +261,9 @@ int AI::EvaluateBoard(Field* chessboard[][8], int maximazing_player)
 			if (chessboard[row][col]->figure != nullptr)
 			{
 				if (chessboard[row][col]->figure->GetPlayer() == COMPUTER)
-					computer_value += chessboard[row][col]->figure->GetValue();
+					computer_value++;
 				else
-					player_value += chessboard[row][col]->figure->GetValue();
+					player_value++;
 			}
 		}
 	}
@@ -307,7 +308,7 @@ Field AI::FindBestMove(Field* chessboard[][8], int depth, std::vector<Figure*>& 
 
 			// Evaluate move
 			int current_eval = MiniMaxAlphaBetaPrunning(newChessboard, moves, depth, alpha, beta, HUMAN, checkmate, player_figures, computer_figures_update, player_king, computer_king_update, figure_to_remove);
-			EvaluateMove(chessboard, field_of_move, computer_figures_update, COMPUTER);
+			current_eval += EvaluateMove(chessboard, field_of_move, computer_figures_update, COMPUTER);
 
 			figure->ChangePositionComputer(previous_position);
 
