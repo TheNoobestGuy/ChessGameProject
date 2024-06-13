@@ -27,11 +27,6 @@ Chessboard::Chessboard(int fields_size)
 	this->move_to = { 0, 0 };
 	this->update_board = true;
 
-	this->player_score[0] = 0;
-	this->player_score[1] = 0;
-	this->computer_score[0] = 0;
-	this->computer_score[1] = 0;
-
 	// Figures
 	this->player_king = nullptr;
 	this->computer_king = nullptr;

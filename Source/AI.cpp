@@ -79,15 +79,13 @@ void AI::UpdateBoard(Field* chessboard[][8], std::vector<Figure*>& player_figure
 
 void AI::UpdateAI(Field* chessboard[][8], std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Figure* player_king, Figure* computer_king, Figure* figure_to_remove)
 {
-	best_move = FindBestMove(chessboard, 2, player_figures, computer_figures, player_king, computer_king, figure_to_remove);
+	best_move = FindBestMove(chessboard, 1, player_figures, computer_figures, player_king, computer_king, figure_to_remove);
 }
 
-int AI::MiniMaxAlphaBetaPrunning(Field* chessboard[][8], std::vector<std::tuple<Field, int>>& moves, int depth, int& alpha, int& beta, int maximazing_player, std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Figure*& player_king, Figure*& computer_king, Figure*& figure_to_remove)
+int AI::MiniMaxAlphaBetaPrunning(Field* chessboard[][8], std::vector<std::tuple<Field, int>>& moves, int depth, int& alpha, int& beta, int maximazing_player, bool checkmate, std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Figure*& player_king, Figure*& computer_king, Figure*& figure_to_remove)
 {
 	if (depth == 0)
 		return EvaluateBoard(chessboard, maximazing_player);
-
-	bool checkmate = false;
 
 	if (maximazing_player == COMPUTER)
 	{
@@ -115,8 +113,10 @@ int AI::MiniMaxAlphaBetaPrunning(Field* chessboard[][8], std::vector<std::tuple<
 				// Update board and push fruther a minimax algorithm
 				if (depth != 1)
 					UpdateBoard(newChessboard, player_figures, computer_figures_update, player_king, computer_king_update, figure_to_remove, checkmate);
-
-				int current_eval = MiniMaxAlphaBetaPrunning(newChessboard, moves, depth - 1, alpha, beta, HUMAN, player_figures, computer_figures_update, player_king , computer_king_update, figure_to_remove);
+				
+				// Evaluate move
+				int current_eval = MiniMaxAlphaBetaPrunning(newChessboard, moves, depth - 1, alpha, beta, HUMAN, checkmate, player_figures, computer_figures_update, player_king , computer_king_update, figure_to_remove);
+				current_eval += EvaluateMove(chessboard, field_of_move, computer_figures_update, COMPUTER);
 
 				figure->ChangePositionComputer(previous_position);
 
@@ -167,7 +167,9 @@ int AI::MiniMaxAlphaBetaPrunning(Field* chessboard[][8], std::vector<std::tuple<
 				if (depth != 1)
 					UpdateBoard(newChessboard, player_figures_update, computer_figures, player_king_update, computer_king, figure_to_remove, checkmate);
 
-				int current_eval = MiniMaxAlphaBetaPrunning(newChessboard, moves, depth - 1, alpha, beta, COMPUTER, player_figures_update, computer_figures, player_king_update, computer_king, figure_to_remove);
+				// Evaluate move
+				int current_eval = MiniMaxAlphaBetaPrunning(newChessboard, moves, depth - 1, alpha, beta, COMPUTER, checkmate, player_figures_update, computer_figures, player_king_update, computer_king, figure_to_remove);
+				current_eval += EvaluateMove(chessboard, field_of_move, player_figures_update, HUMAN);
 
 				figure->ChangePositionComputer(previous_position);
 
@@ -191,6 +193,58 @@ int AI::MiniMaxAlphaBetaPrunning(Field* chessboard[][8], std::vector<std::tuple<
 
 		return min_eval;
 	}
+}
+
+int AI::EvaluateMove(Field* chessboard[][8], Field& move, std::vector<Figure*>& player_figures, int player)
+{
+	int current_value = 0;
+
+	// Get an opposite player and figure after update
+	int opposite_player = HUMAN;
+	if (player == HUMAN)
+		opposite_player = COMPUTER;
+
+	Figure* actual_figure = move.figure;
+	for (Figure* figure : player_figures)
+	{
+		if (move.figure->GetID() == figure->GetID())
+			actual_figure = figure;
+	}
+
+	// Check is there any checkmate
+	if (!actual_figure->way_to_opposite_king.empty())
+		current_value++;
+
+	// Add some value depending on conquered figure
+	if (chessboard[move.field_ID.y][move.field_ID.x]->figure != nullptr)
+		current_value += chessboard[move.field_ID.y][move.field_ID.x]->figure->GetValue();
+
+	// Determine whether some field is under attack of an opposite player or not and subtract value of a potential lose
+	if (chessboard[move.field_ID.y][move.field_ID.x]->field_under_attack[opposite_player])
+		current_value -= move.figure->GetValue();
+
+	// Add some value to a move depending on escaping from a capture of a figure
+	if (chessboard[move.figure->GetField().y][move.figure->GetField().x]->field_under_attack[opposite_player])
+		current_value += move.figure->GetValue();
+
+	// Add some value depending on a range of a light or a heavy figure
+	if (actual_figure->GetName() != "Pawn" && actual_figure->GetName() != "King")
+	{
+		double range_of_motion = 0;
+		for (Field_ID& move : actual_figure->available_moves)
+		{
+			if (actual_figure->GetName() == "Knight")
+				range_of_motion += 0.4;
+			else
+				range_of_motion += 0.12;
+		}
+
+		current_value += (int)range_of_motion;
+	}
+
+	actual_figure = nullptr;
+
+	return current_value;
 }
 
 int AI::EvaluateBoard(Field* chessboard[][8], int maximazing_player)
@@ -221,7 +275,6 @@ Field AI::FindBestMove(Field* chessboard[][8], int depth, std::vector<Figure*>& 
 	std::vector<std::tuple<Field, int>> moves;
 	bool checkmate = false;
 
-	int max_eval = INT_MIN;
 	int alpha = INT_MIN;
 	int beta = INT_MAX;
 	for (Figure* figure : computer_figures)
@@ -252,7 +305,9 @@ Field AI::FindBestMove(Field* chessboard[][8], int depth, std::vector<Figure*>& 
 			// Update board and push further a minimax algorithm
 			UpdateBoard(newChessboard, player_figures, computer_figures_update, player_king, computer_king_update, figure_to_remove, checkmate);
 
-			int current_eval = MiniMaxAlphaBetaPrunning(newChessboard, moves, depth, alpha, beta, HUMAN, player_figures, computer_figures_update, player_king, computer_king_update, figure_to_remove);
+			// Evaluate move
+			int current_eval = MiniMaxAlphaBetaPrunning(newChessboard, moves, depth, alpha, beta, HUMAN, checkmate, player_figures, computer_figures_update, player_king, computer_king_update, figure_to_remove);
+			EvaluateMove(chessboard, field_of_move, computer_figures_update, COMPUTER);
 
 			figure->ChangePositionComputer(previous_position);
 
@@ -312,7 +367,7 @@ Field AI::FindBestMove(Field* chessboard[][8], int depth, std::vector<Figure*>& 
 		final_moves.push_back(move);
 	}
 
-	// Randomly pick a move form a final array of possiblilites
+	// Randomly pick a move form a final vector of possiblilites
 	std::uniform_int_distribution<> distribution(0, final_moves.size()-1);
 	
 	int random = distribution(gen);

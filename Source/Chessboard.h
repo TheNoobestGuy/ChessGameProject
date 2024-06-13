@@ -10,8 +10,6 @@ class Chessboard
 		bool first_turn;
 		bool end_game;
 		int fields_size;
-		int player_score[2];
-		int computer_score[2];
 
 		// Computer
 		AI* Computer;
@@ -66,15 +64,6 @@ class Chessboard
 		void UpdateFigures();
 		void RenderFigures();
 		void EndGame();
-
-		// Properties
-		int GetWhiteFiguresValue() { return player_score[0]; }
-		int GetWhiteConqueredValue() { return player_score[1]; }
-		int GetBlackFiguresValue() { return computer_score[0]; }
-		int GetBlackConqueredValue() { return computer_score[1]; }
-
-		std::vector<Figure*>& GetWhitePlayer() { return player_figures;  }
-		std::vector<Figure*>& GetBlackPlayer() { return computer_figures;  }
 
 	private:
 		Texture marks[3] =
