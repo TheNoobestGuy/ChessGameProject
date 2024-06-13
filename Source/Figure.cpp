@@ -57,3 +57,11 @@ void Figure::ChangePosition(Field_ID field)
 		en_passant = false;
 	}
 }
+
+void Figure::ChangePositionComputer(Field_ID field)
+{
+	this->occupied_field = field;
+
+	figure_rect.x = occupied_field.x * size;
+	figure_rect.y = occupied_field.y * size;
+}

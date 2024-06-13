@@ -40,6 +40,7 @@ class Figure
 
 		// Draw function
 		void ChangePosition(Field_ID field);
+		void ChangePositionComputer(Field_ID field);
 		virtual void Render() = 0;
 
 		// Properties

@@ -79,7 +79,7 @@ void AI::UpdateBoard(Field* chessboard[][8], std::vector<Figure*>& player_figure
 
 void AI::UpdateAI(Field* chessboard[][8], std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Figure* player_king, Figure* computer_king, Figure* figure_to_remove)
 {
-	best_move = FindBestMove(chessboard, 2, player_figures, computer_figures, player_king, computer_king, figure_to_remove);
+	best_move = FindBestMove(chessboard, 1, player_figures, computer_figures, player_king, computer_king, figure_to_remove);
 }
 
 int AI::MiniMaxAlphaBetaPrunning(Field* chessboard[][8], std::vector<std::tuple<Field, int>>& moves, int depth, int alpha, int beta, int maximazing_player, std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Figure*& player_king, Figure*& computer_king, Figure*& figure_to_remove)
@@ -94,52 +94,39 @@ int AI::MiniMaxAlphaBetaPrunning(Field* chessboard[][8], std::vector<std::tuple<
 		int max_eval = INT_MIN;
 		for (Figure* figure : computer_figures)
 		{
-			bool first_move = true;
-			Field_ID base_move;
-
 			for (Field_ID move : figure->available_moves)
 			{
-				if (first_move)
-				{
-					Field base_field_of_move = { move, 64, 0 };
-					moves.push_back({ base_field_of_move, 0 });
-					std::get<0>(moves.back()).figure = figure;
-					base_move = move;
-					first_move = false;
-				}
-
 				Field_ID previous_position = figure->GetField();
 				Field field_of_move = { move, 64, 0 };
 				field_of_move.figure = figure;
 
-				figure->ChangePosition(move);
+				figure->ChangePositionComputer(move);
 
 				Field* newChessboard[8][8];
 				CreateNewChessboard(chessboard, newChessboard, field_of_move);
 
-				UpdateBoard(newChessboard, player_figures, computer_figures, player_king, computer_king, figure_to_remove, checkmate);
+				Figure* computer_king_update;
+				std::vector<Figure*> computer_figures_update;
+				MakeCopyOfFiguresForCalculatingMoves(computer_figures, computer_figures_update, computer_king_update);
 
-				int current_eval = MiniMaxAlphaBetaPrunning(newChessboard, moves, depth - 1, alpha, beta, HUMAN, player_figures, computer_figures, player_king, computer_king, figure_to_remove);
+				UpdateBoard(newChessboard, player_figures, computer_figures_update, player_king, computer_king_update, figure_to_remove, checkmate);
 
-				figure->ChangePosition(previous_position);
-				//DeleteCreatedChessboard(newChessboard);
-				//DeleteFigures(player_figures_update, computer_figures_update);
+				int current_eval = MiniMaxAlphaBetaPrunning(newChessboard, moves, depth - 1, alpha, beta, HUMAN, player_figures, computer_figures_update, player_king , computer_king_update, figure_to_remove);
 
-				if (current_eval > max_eval)
+				figure->ChangePositionComputer(previous_position);
+
+				DeleteCreatedChessboard(newChessboard);
+				DeleteFigures(computer_figures_update);
+				computer_king_update = nullptr;
+
+				if (current_eval < max_eval)
 				{
 					max_eval = current_eval;
-
-					for (std::tuple<Field, int> field : moves)
-					{
-						if (std::get<0>(field).field_ID == base_move)
-						{
-							if (std::get<1>(field) < current_eval)
-							{
-								std::get<1>(field) = current_eval;
-							}
-						}
-					}
 				}
+
+				alpha = std::max(alpha, current_eval);
+				if (beta <= alpha)
+					break;
 			}
 		}
 
@@ -156,20 +143,20 @@ int AI::MiniMaxAlphaBetaPrunning(Field* chessboard[][8], std::vector<std::tuple<
 				Field field_of_move = { move, 64, 0 };
 				field_of_move.figure = figure;
 
-				figure->ChangePosition(move);
+				figure->ChangePositionComputer(move);
 
 				Field* newChessboard[8][8];
 				CreateNewChessboard(chessboard, newChessboard, field_of_move);
 
 				Figure* player_king_update;
 				std::vector<Figure*> player_figures_update;
-				MakeCopyOfFiguresForCalculatingMoves(computer_figures, player_figures_update, player_king_update);
+				MakeCopyOfFiguresForCalculatingMoves(player_figures, player_figures_update, player_king_update);
 
-				UpdateBoard(newChessboard, player_figures_update, computer_figures, player_king, computer_king, figure_to_remove, checkmate);
+				UpdateBoard(newChessboard, player_figures_update, computer_figures, player_king_update, computer_king, figure_to_remove, checkmate);
 
 				int current_eval = MiniMaxAlphaBetaPrunning(newChessboard, moves, depth - 1, alpha, beta, COMPUTER, player_figures_update, computer_figures, player_king_update, computer_king, figure_to_remove);
 
-				figure->ChangePosition(previous_position);
+				figure->ChangePositionComputer(previous_position);
 
 				DeleteCreatedChessboard(newChessboard);
 				DeleteFigures(player_figures_update);
@@ -179,6 +166,10 @@ int AI::MiniMaxAlphaBetaPrunning(Field* chessboard[][8], std::vector<std::tuple<
 				{
 					min_eval = current_eval;
 				}
+
+				beta = std::min(beta, current_eval);
+				if (beta <= alpha)
+					break;
 			}
 		}
 
@@ -229,7 +220,7 @@ Field AI::FindBestMove(Field* chessboard[][8], int depth, std::vector<Figure*>& 
 			Field field_of_move = { move, 64, 0 };
 			field_of_move.figure = figure;
 
-			figure->ChangePosition(move);
+			figure->ChangePositionComputer(move);
 
 			Field* newChessboard[8][8];
 			CreateNewChessboard(chessboard, newChessboard, field_of_move);
@@ -242,7 +233,7 @@ Field AI::FindBestMove(Field* chessboard[][8], int depth, std::vector<Figure*>& 
 
 			int current_eval = MiniMaxAlphaBetaPrunning(newChessboard, moves, depth - 1, 0, 0, HUMAN, player_figures, computer_figures_update, player_king, computer_king_update, figure_to_remove);
 
-			figure->ChangePosition(previous_position);
+			figure->ChangePositionComputer(previous_position);
 
 			DeleteCreatedChessboard(newChessboard);
 			DeleteFigures(computer_figures_update);
@@ -394,7 +385,11 @@ void AI::MakeCopyOfFiguresForCalculatingMoves(std::vector<Figure*>& player_figur
 			continue;
 		}
 
-		player_figures_update.back()->SetPlayer(COMPUTER);
+		if (figure->GetPlayer() == COMPUTER)
+			player_figures_update.back()->SetPlayer(COMPUTER);
+		else
+			player_figures_update.back()->SetPlayer(HUMAN);
+
 		player_figures_update.back()->PossibleMoves();
 	}
 }
