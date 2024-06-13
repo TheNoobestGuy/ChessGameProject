@@ -79,10 +79,10 @@ void AI::UpdateBoard(Field* chessboard[][8], std::vector<Figure*>& player_figure
 
 void AI::UpdateAI(Field* chessboard[][8], std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Figure* player_king, Figure* computer_king, Figure* figure_to_remove)
 {
-	best_move = FindBestMove(chessboard, 1, player_figures, computer_figures, player_king, computer_king, figure_to_remove);
+	best_move = FindBestMove(chessboard, 2, player_figures, computer_figures, player_king, computer_king, figure_to_remove);
 }
 
-int AI::MiniMaxAlphaBetaPrunning(Field* chessboard[][8], std::vector<std::tuple<Field, int>>& moves, int depth, int alpha, int beta, int maximazing_player, std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Figure*& player_king, Figure*& computer_king, Figure*& figure_to_remove)
+int AI::MiniMaxAlphaBetaPrunning(Field* chessboard[][8], std::vector<std::tuple<Field, int>>& moves, int depth, int& alpha, int& beta, int maximazing_player, std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Figure*& player_king, Figure*& computer_king, Figure*& figure_to_remove)
 {
 	if (depth == 0)
 		return EvaluateBoard(chessboard, maximazing_player);
@@ -96,34 +96,42 @@ int AI::MiniMaxAlphaBetaPrunning(Field* chessboard[][8], std::vector<std::tuple<
 		{
 			for (Field_ID move : figure->available_moves)
 			{
+				// Determine an actual field of a figure and it move
 				Field_ID previous_position = figure->GetField();
 				Field field_of_move = { move, 64, 0 };
 				field_of_move.figure = figure;
 
 				figure->ChangePositionComputer(move);
 
+				// Create new board that is essential for later updating figures possiblities
 				Field* newChessboard[8][8];
 				CreateNewChessboard(chessboard, newChessboard, field_of_move);
 
+				// Create copy of a figures that are about to passed into update board function
 				Figure* computer_king_update;
 				std::vector<Figure*> computer_figures_update;
 				MakeCopyOfFiguresForCalculatingMoves(computer_figures, computer_figures_update, computer_king_update);
 
-				UpdateBoard(newChessboard, player_figures, computer_figures_update, player_king, computer_king_update, figure_to_remove, checkmate);
+				// Update board and push fruther a minimax algorithm
+				if (depth != 1)
+					UpdateBoard(newChessboard, player_figures, computer_figures_update, player_king, computer_king_update, figure_to_remove, checkmate);
 
 				int current_eval = MiniMaxAlphaBetaPrunning(newChessboard, moves, depth - 1, alpha, beta, HUMAN, player_figures, computer_figures_update, player_king , computer_king_update, figure_to_remove);
 
 				figure->ChangePositionComputer(previous_position);
 
+				// Clear memory that has been used
 				DeleteCreatedChessboard(newChessboard);
 				DeleteFigures(computer_figures_update);
 				computer_king_update = nullptr;
 
-				if (current_eval < max_eval)
+				// Change value of a move
+				if (current_eval > max_eval)
 				{
 					max_eval = current_eval;
 				}
 
+				// Alpha cut-off
 				alpha = std::max(alpha, current_eval);
 				if (beta <= alpha)
 					break;
@@ -139,34 +147,42 @@ int AI::MiniMaxAlphaBetaPrunning(Field* chessboard[][8], std::vector<std::tuple<
 		{
 			for (Field_ID move : figure->available_moves)
 			{
+				// Determine an actual field of a figure and it move
 				Field_ID previous_position = figure->GetField();
 				Field field_of_move = { move, 64, 0 };
 				field_of_move.figure = figure;
 
 				figure->ChangePositionComputer(move);
 
+				// Create new board that is essential for later updating figures possiblities
 				Field* newChessboard[8][8];
 				CreateNewChessboard(chessboard, newChessboard, field_of_move);
 
+				// Create copy of a figures that are about to passed into update board function
 				Figure* player_king_update;
 				std::vector<Figure*> player_figures_update;
 				MakeCopyOfFiguresForCalculatingMoves(player_figures, player_figures_update, player_king_update);
 
-				UpdateBoard(newChessboard, player_figures_update, computer_figures, player_king_update, computer_king, figure_to_remove, checkmate);
+				// Update board and push further a minimax algorithm
+				if (depth != 1)
+					UpdateBoard(newChessboard, player_figures_update, computer_figures, player_king_update, computer_king, figure_to_remove, checkmate);
 
 				int current_eval = MiniMaxAlphaBetaPrunning(newChessboard, moves, depth - 1, alpha, beta, COMPUTER, player_figures_update, computer_figures, player_king_update, computer_king, figure_to_remove);
 
 				figure->ChangePositionComputer(previous_position);
 
+				// Clear memory that has been used
 				DeleteCreatedChessboard(newChessboard);
 				DeleteFigures(player_figures_update);
 				player_king_update = nullptr;
 
+				// Change value of a move
 				if (current_eval < min_eval)
 				{
 					min_eval = current_eval;
 				}
 
+				// Beta cut-off
 				beta = std::min(beta, current_eval);
 				if (beta <= alpha)
 					break;
@@ -182,6 +198,7 @@ int AI::EvaluateBoard(Field* chessboard[][8], int maximazing_player)
 	int player_value = 0;
 	int computer_value = 0;
 
+	// Check value of a board by counting a number of a figures of both players and add their values to their variables
 	for (int row = 0; row < 8; row++)
 	{
 		for (int col = 0; col < 8; col++)
@@ -196,10 +213,7 @@ int AI::EvaluateBoard(Field* chessboard[][8], int maximazing_player)
 		}
 	}
 
-	if (maximazing_player == HUMAN)
-		return computer_value - player_value;
-	else
-		return player_value - computer_value;
+	return computer_value - player_value;
 }
 
 Field AI::FindBestMove(Field* chessboard[][8], int depth, std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Figure*& player_king, Figure*& computer_king, Figure*& figure_to_remove)
@@ -208,37 +222,46 @@ Field AI::FindBestMove(Field* chessboard[][8], int depth, std::vector<Figure*>& 
 	bool checkmate = false;
 
 	int max_eval = INT_MIN;
+	int alpha = INT_MIN;
+	int beta = INT_MAX;
 	for (Figure* figure : computer_figures)
 	{
 		for (Field_ID move : figure->available_moves)
 		{
+			// Push base move field into possible moves vector
 			Field base_field_of_move = { move, 64, 0 };
 			moves.push_back({ base_field_of_move, 0 });
 			std::get<0>(moves.back()).figure = figure;
 
+			// Save for later use starting position of a figure and determine move that is about to be check
 			Field_ID previous_position = figure->GetField();
 			Field field_of_move = { move, 64, 0 };
 			field_of_move.figure = figure;
 
 			figure->ChangePositionComputer(move);
 
+			// Create new board basing on a actual move
 			Field* newChessboard[8][8];
 			CreateNewChessboard(chessboard, newChessboard, field_of_move);
 
+			// Copy figures that are passed later to minimax algorithm
 			Figure* computer_king_update;
 			std::vector<Figure*> computer_figures_update;
 			MakeCopyOfFiguresForCalculatingMoves(computer_figures, computer_figures_update, computer_king_update);
 
+			// Update board and push further a minimax algorithm
 			UpdateBoard(newChessboard, player_figures, computer_figures_update, player_king, computer_king_update, figure_to_remove, checkmate);
 
-			int current_eval = MiniMaxAlphaBetaPrunning(newChessboard, moves, depth - 1, 0, 0, HUMAN, player_figures, computer_figures_update, player_king, computer_king_update, figure_to_remove);
+			int current_eval = MiniMaxAlphaBetaPrunning(newChessboard, moves, depth, alpha, beta, HUMAN, player_figures, computer_figures_update, player_king, computer_king_update, figure_to_remove);
 
 			figure->ChangePositionComputer(previous_position);
 
+			// Clear memory that has been used and push value of a move to a vector
 			DeleteCreatedChessboard(newChessboard);
 			DeleteFigures(computer_figures_update);
 			computer_king_update = nullptr;
-
+			
+			// Set value of a move that is depending on created tree by a minimax algorithm
 			std::get<1>(moves.back()) = current_eval;
 		}
 	}
@@ -271,6 +294,7 @@ Field AI::FindBestMove(Field* chessboard[][8], int depth, std::vector<Figure*>& 
 
 	std::vector<Field> final_moves;
 
+	// Prefer using light and heavy figures instead of pawns
 	int pawn_counter = 0;
 	for (Field move : best_moves)
 	{
@@ -288,6 +312,7 @@ Field AI::FindBestMove(Field* chessboard[][8], int depth, std::vector<Figure*>& 
 		final_moves.push_back(move);
 	}
 
+	// Randomly pick a move form a final array of possiblilites
 	std::uniform_int_distribution<> distribution(0, final_moves.size()-1);
 	
 	int random = distribution(gen);
@@ -299,6 +324,7 @@ Field AI::FindBestMove(Field* chessboard[][8], int depth, std::vector<Figure*>& 
 
 void AI::CreateNewChessboard(Field* previousChessboard[][8], Field* newChessboard[][8], Field& move)
 {
+	// Create a new board
 	for (int row = 0; row < 8; row++)
 	{
 		for (int col = 0; col < 8; col++)
@@ -307,6 +333,7 @@ void AI::CreateNewChessboard(Field* previousChessboard[][8], Field* newChessboar
 		}
 	}
 
+	// Copy a base board and append move that have to be check
 	for (int row = 0; row < 8; row++)
 	{
 		for (int col = 0; col < 8; col++)
@@ -553,6 +580,7 @@ void AI::HasBecomeFigure(Field* chessboard[][8], std::vector<Figure*>& player_fi
 
 void AI::CreateChoiceWindow(int figures_color, int start_field, int field, int field_y, Text* options[6])
 {
+	// Create a selection menu for choosing a figure when pawn reaches the opposite end of a board
 	int field_x = start_field + field;
 
 	for (int i = 1; i < 5; i++)
@@ -569,6 +597,7 @@ void AI::CreateChoiceWindow(int figures_color, int start_field, int field, int f
 		field_x += field;
 	}
 
+	// Create border of a selection menu
 	field_x = start_field;
 	for (int i = 0, border = 0; i < 6; i += 5, border++)
 	{
@@ -586,6 +615,7 @@ void AI::ChoiceBetweenFigures(Field* chessboard[][8], std::vector<Figure*>& play
 	marked = nullptr;
 	Text* options[6];
 
+	// Determine where and with which color a selection menu for choosing a figure should be displayed
 	if (GameEngine::turn == COMPUTER)
 	{
 		if (GameEngine::human_player == WHITE_FIGURES)
@@ -634,6 +664,7 @@ void AI::ChoiceBetweenFigures(Field* chessboard[][8], std::vector<Figure*>& play
 
 void AI::UpdateChoice(Text* options[6], int& selected_figure, bool& running)
 {
+	// Mark and enable to choose an option from selection menu
 	for (int select = 1; select < 5; select++)
 	{
 		if (marked == nullptr)
@@ -743,6 +774,7 @@ void AI::EventHandlerForChoice(bool& running, int& choice)
 
 void AI::AttachPositionsToBoard(Field* chessboard[][8], std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures)
 {
+	// Reset a chessboard
 	for (int row = 0; row < 8; row++)
 	{
 		for (int col = 0; col < 8; col++)
@@ -754,6 +786,7 @@ void AI::AttachPositionsToBoard(Field* chessboard[][8], std::vector<Figure*>& pl
 		}
 	}
 
+	// Append all figures that are already on a board
 	for (Figure* figure : player_figures)
 	{
 		figure->Release();
@@ -771,10 +804,9 @@ void AI::CalculateFigureMoves(Field* chessboard[][8], std::vector<Figure*>& play
 {
 	for (Figure* figure : player_figures)
 	{
-		// Clear unactual available moves
 		figure->available_moves.clear();
 
-		// Calculate possible move for figures
+		// Calculate possible move for figures depending on their names and possibilities
 		if (figure->GetName() == "King")
 		{
 			for (int move = 0; move < figure->moves_list.size(); move++)

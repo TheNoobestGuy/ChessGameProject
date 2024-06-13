@@ -46,14 +46,6 @@ struct FigureMove
 class AI
 {
 	private:
-		std::vector<Field> player_moves_list;
-		std::vector<Field> computer_moves_list;
-	
-		// ????
-		Figure* player_king_update;
-		Figure* computer_king_update;
-		//
-	
 		Field best_move;
 	
 		Text* marked;
@@ -61,18 +53,17 @@ class AI
 		Text* chooseBottomFigures[6];
 	
 		// Evaluating moves algorithm
-		int MiniMaxAlphaBetaPrunning(Field* chessboard[][8], std::vector<std::tuple<Field, int>>& moves, int depth, int alpha, int beta, int maximazing_player, std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Figure*& player_king, Figure*& computer_king, Figure*& figure_to_remove);
+		Field FindBestMove(Field* chessboard[][8], int depth, std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Figure*& player_king, Figure*& computer_king, Figure*& figure_to_remove);
+		int MiniMaxAlphaBetaPrunning(Field* chessboard[][8], std::vector<std::tuple<Field, int>>& moves, int depth, int& alpha, int& beta, int maximazing_player, std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Figure*& player_king, Figure*& computer_king, Figure*& figure_to_remove);
 		int EvaluateBoard(Field* chessboard[][8], int maximazing_player);
 	
 		void MakeCopyOfFiguresForCalculatingMoves(std::vector<Figure*>& player_figures, std::vector<Figure*>& player_figures_update, Figure*& player_king_update);
 		void DeleteFigures(std::vector<Figure*>& player_figures);
-	
+
 		void CreateNewChessboard(Field* previousChessboard[][8], Field* newChessboard[][8], Field& move);
 		void DeleteCreatedChessboard(Field* chessboard[][8]);
 	
-		Field FindBestMove(Field* chessboard[][8], int depth, std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Figure*& player_king, Figure*& computer_king, Figure*& figure_to_remove);
-	
-		// Show choice when pawn has reached end of chessboard
+		// Show choice when pawn has reached end of a chessboard
 		void HasBecomeFigure(Field* chessboard[][8], std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures);
 		void CreateChoiceWindow(int figures_color, int start_field, int field, int field_y, Text* options[6]);
 		void ChoiceBetweenFigures(Field* chessboard[][8], std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, int& selected_figure, bool& running, int& choice);
