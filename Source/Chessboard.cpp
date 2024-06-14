@@ -641,8 +641,8 @@ void Chessboard::MoveFigure()
 							}
 							else
 							{
-								move_to.attacked_figure->ChangePosition({ 4, 0 });
-								current_figure->ChangePosition({ 5, 0 });
+								move_to.attacked_figure->ChangePosition({ 5, 0 });
+								current_figure->ChangePosition({ 6, 0 });
 							}
 						}
 						else
@@ -654,8 +654,8 @@ void Chessboard::MoveFigure()
 							}
 							else
 							{
-								move_to.attacked_figure->ChangePosition({ 4, 7 });
-								current_figure->ChangePosition({ 5, 7 });
+								move_to.attacked_figure->ChangePosition({ 5, 7 });
+								current_figure->ChangePosition({ 6, 7 });
 							}
 						}
 

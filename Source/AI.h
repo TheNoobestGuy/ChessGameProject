@@ -55,6 +55,7 @@ class AI
 		// Evaluating moves algorithm
 		Field FindBestMove(Field* chessboard[][8], int depth, std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Figure*& player_king, Figure*& computer_king, Figure*& figure_to_remove);
 		int MiniMaxAlphaBetaPrunning(Field* chessboard[][8], std::vector<std::tuple<Field, int>>& moves, int depth, int& alpha, int& beta, int maximazing_player, bool checkmate, std::vector<Figure*>& player_figures, std::vector<Figure*>& computer_figures, Figure*& player_king, Figure*& computer_king, Figure*& figure_to_remove);
+		
 		int EvaluateMove(Field* chessboard[][8], Field& move, std::vector<Figure*>& player_figures, int player);
 		int EvaluateBoard(Field* chessboard[][8], int maximazing_player);
 	

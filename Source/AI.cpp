@@ -169,7 +169,6 @@ int AI::MiniMaxAlphaBetaPrunning(Field* chessboard[][8], std::vector<std::tuple<
 
 				// Evaluate move
 				int current_eval = MiniMaxAlphaBetaPrunning(newChessboard, moves, depth - 1, alpha, beta, COMPUTER, checkmate, player_figures_update, computer_figures, player_king_update, computer_king, figure_to_remove);
-
 				current_eval -= EvaluateMove(chessboard, field_of_move, player_figures_update, HUMAN);
 
 				figure->ChangePositionComputer(previous_position);
@@ -227,21 +226,6 @@ int AI::EvaluateMove(Field* chessboard[][8], Field& move, std::vector<Figure*>& 
 	// Add some value to a move depending on escaping from a capture of a figure
 	if (chessboard[move.figure->GetField().y][move.figure->GetField().x]->field_under_attack[opposite_player])
 		current_value += move.figure->GetValue();
-
-	// Add some value depending on a range of a light or a heavy figure
-	if (actual_figure->GetName() != "Pawn" && actual_figure->GetName() != "King")
-	{
-		double range_of_motion = 0;
-		for (Field_ID& move : actual_figure->available_moves)
-		{
-			if (actual_figure->GetName() == "Knight")
-				range_of_motion += 0.4;
-			else
-				range_of_motion += 0.12;
-		}
-
-		current_value += (int)range_of_motion;
-	}
 
 	actual_figure = nullptr;
 
@@ -350,30 +334,12 @@ Field AI::FindBestMove(Field* chessboard[][8], int depth, std::vector<Figure*>& 
 
 	std::vector<Field> final_moves;
 
-	// Prefer using light and heavy figures instead of pawns
-	int pawn_counter = 0;
-	for (Field move : best_moves)
-	{
-		if (move.figure->GetName() == "Pawn")
-		{
-			pawn_counter++;
-
-			if (pawn_counter >= 2)
-			{
-				pawn_counter = 0;
-				continue;
-			}
-		}
-
-		final_moves.push_back(move);
-	}
-
 	// Randomly pick a move form a final vector of possiblilites
-	std::uniform_int_distribution<> distribution(0, final_moves.size()-1);
+	std::uniform_int_distribution<> distribution(0, best_moves.size()-1);
 	
 	int random = distribution(gen);
 
-	best_move = final_moves[random];
+	best_move = best_moves[random];
 
 	return best_move;
 }
@@ -1299,17 +1265,10 @@ void AI::KingMechanic(Field* chessboard[][8], std::vector<Figure*>& player_figur
 									if (chessboard[rook_y][move_x]->figure->GetField().y == rook_y)
 									{
 										king->available_moves.push_back({ move_x, rook_y });
-										next_axis = true;
 									}
 								}
 							}
-							else
-							{
-								next_axis = true;
-							}
-						}
-						else if (chessboard[rook_y][move_x]->field_under_attack[opposite_player_figures.back()->GetPlayer()])
-						{
+							
 							next_axis = true;
 						}
 					}
