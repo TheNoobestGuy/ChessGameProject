@@ -214,8 +214,8 @@ int AI::EvaluateMove(Field* chessboard[][8], Field& move, std::vector<Figure*>& 
 	// Check is there any checkmate
 	if (!actual_figure->way_to_opposite_king.empty())
 		current_value++;
-
-	// Add some value depending on conquered figure
+	
+	// Add some value depending on a conquered figure
 	if (chessboard[move.field_ID.y][move.field_ID.x]->figure != nullptr)
 		current_value += chessboard[move.field_ID.y][move.field_ID.x]->figure->GetValue();
 
@@ -226,7 +226,7 @@ int AI::EvaluateMove(Field* chessboard[][8], Field& move, std::vector<Figure*>& 
 	// Add some value to a move depending on escaping from a capture of a figure
 	if (chessboard[move.figure->GetField().y][move.figure->GetField().x]->field_under_attack[opposite_player])
 		current_value += move.figure->GetValue();
-
+	
 	actual_figure = nullptr;
 
 	return current_value;
@@ -332,8 +332,6 @@ Field AI::FindBestMove(Field* chessboard[][8], int depth, std::vector<Figure*>& 
 	std::mt19937 gen(rd());
 	std::shuffle(best_moves.begin(), best_moves.end(), gen);
 
-	std::vector<Field> final_moves;
-
 	// Randomly pick a move form a final vector of possiblilites
 	std::uniform_int_distribution<> distribution(0, best_moves.size()-1);
 	
@@ -427,7 +425,7 @@ void AI::MakeCopyOfFiguresForCalculatingMoves(std::vector<Figure*>& player_figur
 		else if (figure->GetName() == "King")
 		{
 			player_figures_update.push_back(new King(figure->GetName(), figure->GetID(), figure->GetField(), figure->GetColor(), 64, figure->GetValue()));
-			player_king_update = figure;
+			player_king_update = player_figures_update.back();
 		}
 		else
 		{
